@@ -31,7 +31,7 @@
 <div id="intro-page">
   <section class="hero" aria-labelledby="page-title">
     <div><p class="eyebrow">CHAPTER 01 / 從觀察開始</p><h1 id="page-title">波向前走，<br>什麼跟著走？</h1><p class="hero-copy">看波形，也看一個點。探索六種波動，分清楚<br class="desktop-only">「擾動的傳播」與「局部的振動」。</p><a class="start-link" href="#experiment">開始觀察 <span aria-hidden="true">↘</span></a></div>
-    <div class="hero-visual" aria-hidden="true"><svg viewBox="0 0 500 220"><defs><linearGradient id="wave-fill" x2="0" y2="1"><stop stop-color="#268577" stop-opacity=".17"/><stop offset="1" stop-color="#268577" stop-opacity="0"/></linearGradient></defs><path class="hero-fill" d="M0 115 C40 35 80 35 120 115S200 195 240 115S320 35 360 115S440 195 480 115L480 210H0Z"/><path class="hero-line" d="M0 115 C40 35 80 35 120 115S200 195 240 115S320 35 360 115S440 195 480 115"/><path class="hero-baseline" d="M0 115H480"/><circle class="hero-orbit" cx="300" cy="115" r="56"/><circle class="hero-dot" cx="300" cy="59" r="9"/><path class="hero-arrow" d="M350 20H475m-12-8 12 8-12 8"/><text x="350" y="52">擾動傳播</text><text x="270" y="206">局部振動</text></svg><span class="visual-caption">一個質點，就能看懂波的秘密。</span></div>
+    <div class="hero-visual" aria-hidden="true"><svg viewBox="0 0 500 220"><defs><linearGradient id="wave-fill" x2="0" y2="1"><stop stop-color="#268577" stop-opacity=".17"/><stop offset="1" stop-color="#268577" stop-opacity="0"/></linearGradient></defs><path class="hero-fill" d="M0 115 C40 35 80 35 120 115S200 195 240 115S320 35 360 115S440 195 480 115L480 210H0Z"/><path class="hero-line" d="M0 115 C40 35 80 35 120 115S200 195 240 115S320 35 360 115S440 195 480 115"/><path class="hero-baseline" d="M0 115H480"/><circle class="hero-orbit" cx="300" cy="115" r="56"/><circle class="hero-dot" cx="300" cy="59" r="9"/><path class="hero-arrow" d="M350 20H475m-12-8 12 8-12 8"/></svg><div class="hero-legend"><span>→ 擾動傳播</span><span>○ 局部振動</span></div><span class="visual-caption">一個質點，就能看懂波的秘密。</span></div>
   </section>
   <div class="big-idea"><span class="idea-mark">核心觀念</span><p><strong>波動，是擾動由一處傳向另一處的現象。</strong>波可以傳遞能量；在這些機械波的理想模型中，介質質點主要在平衡位置附近運動。</p></div>
   <section class="lab-layout" id="experiment" aria-label="波動互動實驗">
@@ -56,6 +56,7 @@
           <figure><figcaption><strong>雷利波 Rayleigh</strong><span>表面波・橢圓運動</span></figcaption><canvas data-seismic="rayleigh" width="480" height="310" role="img" aria-label="雷利波：近地表質點在垂直平面作逆行橢圓運動"></canvas></figure>
           <figure><figcaption><strong>洛弗波 Love</strong><span>表面波・水平剪切</span></figcaption><canvas data-seismic="love" width="480" height="310" role="img" aria-label="洛弗波：質點在水平面內垂直於傳播方向振動"></canvas></figure>
         </div>
+        <p id="canvas-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
         <div class="legend" id="legend"></div>
         <div class="transport"><div class="transport-buttons"><button id="play" class="play-button">❚❚ 暫停</button><button id="step">逐格 +</button><button id="reset">↺ 重設</button></div><label class="speed-control" for="speed">播放速度 <input id="speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="speed-output" for="speed">1.0×</output></label><span class="time-readout">動畫時間 <output id="time-output">0.00</output> s</span></div>
       </div>
@@ -73,7 +74,7 @@
 <section id="planned-page" class="planned-page" hidden><p class="eyebrow">下一階段的學習</p><h1 id="planned-title"></h1><p>這個分頁已建立入口，互動教材尚未製作。目前可完整使用「波的介紹」中的六組實驗。</p><ul id="planned-outline"></ul><a class="solid-link" href="#intro/water">回到波的介紹 →</a></section>
 <section class="sources"><details><summary>資料來源與動畫製作說明</summary><p>互動模型使用 HTML Canvas 自行繪製。定性概念參考以下教育與研究機構；各模型的近似條件列於實驗內。</p><ul><li><a href="https://www.noaa.gov/jetstream/ocean/waves/jetstream-max-anatomy-of-wave" target="_blank" rel="noopener">NOAA：水波與質點軌道</a></li><li><a href="https://www.nidcd.nih.gov/health/how-do-we-hear" target="_blank" rel="noopener">NIH / NIDCD：聲音如何轉換為聽覺</a></li><li><a href="https://science.nasa.gov/ems/02_anatomy/" target="_blank" rel="noopener">NASA：電磁波的結構</a></li><li><a href="https://www.iris.edu/hq/inclass/animation/seismic_wave_motions4_waves_animated" target="_blank" rel="noopener">IRIS / SAGE：四種地震波的運動</a></li><li><a href="https://www.ligo.caltech.edu/page/what-are-gw" target="_blank" rel="noopener">LIGO：什麼是重力波</a></li></ul><p>兩個參考 GIF 由使用者提供，原圖署名為 Daniel A. Russell；其權利歸原作者。本網站自行繪製的模型與參考 GIF 分開呈現。</p></details></section>
 </main>
-<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波的介紹 · v1.0</span></footer>
+<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波的介紹 · v1.1</span></footer>
 <noscript><div class="noscript">請開啟 JavaScript，以使用互動動畫。</div></noscript>
 </body>
 </html>

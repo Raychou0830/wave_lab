@@ -58,9 +58,16 @@
   const state={mode:'water',chapter:'intro',t:0,speed:1,playing:!window.matchMedia('(prefers-reduced-motion: reduce)').matches,options:Object.fromEntries(modes.map(m=>[m,defaults()])),last:null};
   const canvas=$('main-canvas'),seismicCanvases=[...document.querySelectorAll('[data-seismic]')];
   const contexts=new Map();
-  function prepare(c,w,h){const dpr=Math.min(window.devicePixelRatio||1,2);c.width=w*dpr;c.height=h*dpr;const ctx=c.getContext('2d');if(!ctx)return false;ctx.setTransform(dpr,0,0,dpr,0,0);contexts.set(c,ctx);return true;}
+  function prepare(c,w,h){const dpr=Math.min(window.devicePixelRatio||1,2);c.width=w*dpr;c.height=h*dpr;const ctx=c.getContext('2d');if(!ctx)return false;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.logicalWidth=w;ctx.logicalHeight=h;ctx.displayScale=1;contexts.set(c,ctx);return true;}
   if(!prepare(canvas,1000,500)){$('canvas-fallback').hidden=false;return;}
   seismicCanvases.forEach(c=>prepare(c,480,310));
+  function updateCanvasMetrics(){
+    for(const [c,ctx] of contexts){const width=c.getBoundingClientRect().width;if(width>0)ctx.displayScale=width/ctx.logicalWidth;}
+    const container=$('single-stage');
+    $('canvas-pan-hint').hidden=state.mode==='seismic'
+      ? !seismicCanvases.some(c=>c.getBoundingClientRect().width>c.parentElement.clientWidth+2)
+      : canvas.getBoundingClientRect().width<=container.clientWidth+2;
+  }
   function options(){return state.options[state.mode];}
   function draw(){const o=options();if(state.mode==='seismic')seismicCanvases.forEach(c=>WaveRenderers.seismic(contexts.get(c),c.dataset.seismic,state.t,o));else WaveRenderers[state.mode](contexts.get(canvas),state.t,o);$('time-output').textContent=state.t.toFixed(2);}
   function segment(key,items){return `<div class="segmented" role="group" aria-label="${{waterView:'水波視角',waterDepth:'水深模型',springType:'彈簧振動方式',polarization:'重力波偏振'}[key]}">${items.map(([v,l])=>`<button data-option="${key}" data-value="${v}" aria-pressed="${options()[key]===v}">${l}</button>`).join('')}</div>`;}
@@ -74,7 +81,7 @@
     }
     if(state.mode==='em')html=`<label><input id="show-e" type="checkbox" ${o.showE?'checked':''}> 電場 E</label><label><input id="show-b" type="checkbox" ${o.showB?'checked':''}> 磁場 B</label><label for="angle">視角 <input id="angle" type="range" min="-60" max="-10" step="1" value="${o.angle}"><output id="angle-output">${o.angle}°</output></label>`;
     if(state.mode==='seismic')html='<span class="control-note">四圖同步播放 · 金色 A 點為固定介質質點</span><span class="control-note">速率與位移皆為示意</span>';
-    if(state.mode==='gravity')html=segment('polarization',[['plus','+ 偏振'],['cross','× 偏振']])+'<span class="control-note">雙星固定軌道 · 相對距離變化已放大</span>';
+    if(state.mode==='gravity')html=segment('polarization',[['plus','+ 偏振'],['cross','× 偏振']])+'<span class="control-note">雙星固定軌道 · 相對距離變化已放大</span><span class="control-note">⊙ 右圖的波朝向觀察者</span>';
     $('context-controls').innerHTML=html;
     $('context-controls').querySelectorAll('[data-option]').forEach(btn=>btn.addEventListener('click',()=>{o[btn.dataset.option]=btn.dataset.value;buildControls();draw();}));
     if($('frequency'))$('frequency').addEventListener('input',e=>{o.frequency=Number(e.target.value);$('frequency-output').textContent=o.frequency.toFixed(2)+' Hz';updateTone();draw();});
@@ -98,7 +105,7 @@
     $('single-stage').hidden=mode==='seismic';$('seismic-stage').hidden=mode!=='seismic';$('reference-details').hidden=mode!=='water';
     if(mode!=='water'){$('reference-details').open=false;unloadReferences();}
     $('progress-label').textContent=`探索 0${n} / 06`;$('next-wave').textContent=mode==='gravity'?'回到水波 ↺':`下一個實驗：${data[modes[n]].title} →`;
-    buildControls();setLegend();buildQuestion(d);syncPlayback();draw();
+    buildControls();setLegend();buildQuestion(d);syncPlayback();updateCanvasMetrics();draw();
   }
   function route(){
     const parts=location.hash.slice(1).split('/'),chapter=parts[0]||'intro';
@@ -121,7 +128,7 @@
   $('next-wave').addEventListener('click',()=>{location.hash='#intro/'+modes[(modes.indexOf(state.mode)+1)%modes.length];$('experiment').scrollIntoView({behavior:'auto',block:'start'});});
   async function toggleFullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await $('lab-panel').requestFullscreen();}catch(e){$('fullscreen').title='此瀏覽器無法開啟全螢幕';}}
   if($('lab-panel').requestFullscreen)$('fullscreen').addEventListener('click',toggleFullscreen);else{$('fullscreen').disabled=true;$('fullscreen').title='此瀏覽器不支援全螢幕';}
-  document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'⛶ 退出':'⛶';$('fullscreen').style.width=document.fullscreenElement?'62px':'32px';});
+  document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'⛶ 退出':'⛶';$('fullscreen').style.width=document.fullscreenElement?'auto':'44px';updateCanvasMetrics();draw();});
   function unloadReferences(){['ref-water','ref-surface'].forEach(id=>$(id).removeAttribute('src'));}
   $('reference-details').addEventListener('toggle',()=>{if($('reference-details').open)['ref-water','ref-surface'].forEach(id=>$(id).src=$(id).dataset.src);else unloadReferences();});
   let audioContext=null,oscillator=null,gain=null,toneEnabled=false,audioRequest=0;
@@ -135,6 +142,8 @@
     try{if(!audioContext)audioContext=new AudioCtor();await audioContext.resume();if(request!==audioRequest||state.mode!==modeAtStart||state.chapter!=='intro')return;oscillator=audioContext.createOscillator();gain=audioContext.createGain();gain.gain.value=0;oscillator.type='sine';oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start();toneEnabled=true;updateTone();}catch(e){stopTone();if($('tone'))$('tone').textContent='音訊無法啟用';}finally{button.disabled=false;}
   }
   window.addEventListener('hashchange',route);
+  window.addEventListener('resize',()=>{updateCanvasMetrics();draw();});
+  if(window.ResizeObserver){const observer=new window.ResizeObserver(()=>{updateCanvasMetrics();draw();});contexts.forEach((ctx,c)=>observer.observe(c));}
   document.addEventListener('visibilitychange',()=>{state.last=null;updateTone();});
   function frame(timestamp){if(state.last===null)state.last=timestamp;const dt=Math.min(Math.max((timestamp-state.last)/1000,0),.05);state.last=timestamp;if(state.playing&&state.chapter==='intro'&&!document.hidden){state.t+=dt*state.speed;draw();}window.requestAnimationFrame(frame);}
   route();window.requestAnimationFrame(frame);
