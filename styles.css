@@ -35,3 +35,12 @@ small,sub,sup{font-size:var(--min-font-size)}
 @media(max-width:900px){.seismic-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.hero{grid-template-columns:1fr}.hero-visual{max-width:500px;width:100%;margin:0 auto}.lab-topbar .model-label{order:3;flex-basis:100%;margin-left:0}.icon-button{margin-left:auto}.menu-icon{display:none}.type-tag{white-space:normal}.question-choices button{line-height:1.6}}
 @media(max-width:480px){.hero-visual{position:relative;right:auto;top:auto;opacity:1;pointer-events:auto;max-width:400px}.hero-copy{max-width:100%}.hero-visual .visual-caption{display:block}.time-readout{margin-left:0}.experiment-next{align-items:flex-start}.lab-panel:fullscreen .canvas-wrap{overflow-x:auto}}
+
+/* v1.2: orbitable 3D scenes keep the entire observation window available. */
+canvas.interactive-3d{min-width:0!important;width:100%;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas.interactive-3d.is-orbiting{cursor:grabbing}
+.camera-toolbar{display:flex;gap:7px;flex-wrap:wrap;flex-basis:100%;margin-top:8px}
+.camera-toolbar button{font-size:16px;color:#d2e8ed;background:#24424f;border:1px solid #789caa66;border-radius:6px;padding:6px 12px;line-height:1.5}
+.camera-toolbar button[aria-pressed="true"]{background:#285451;color:#bff5e0;border-color:#69d9d099}
+.camera-help{flex-basis:100%;font-size:16px;line-height:1.7;color:#a9c2cc;margin:4px 0}
+.camera-readout{font-size:16px;color:#a9c2cc;display:block;font-variant-numeric:tabular-nums;padding-bottom:8px}

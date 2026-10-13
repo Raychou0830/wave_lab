@@ -9,6 +9,7 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <script defer src="models.js"></script>
+  <script defer src="scene3d.js"></script>
   <script defer src="renderers.js"></script>
   <script defer src="app.js"></script>
 </head>
@@ -60,7 +61,7 @@
         <div class="legend" id="legend"></div>
         <div class="transport"><div class="transport-buttons"><button id="play" class="play-button">❚❚ 暫停</button><button id="step">逐格 +</button><button id="reset">↺ 重設</button></div><label class="speed-control" for="speed">播放速度 <input id="speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="speed-output" for="speed">1.0×</output></label><span class="time-readout">動畫時間 <output id="time-output">0.00</output> s</span></div>
       </div>
-      <div class="experiment-settings"><label for="amplitude"><span id="amplitude-label">振動幅度</span><input id="amplitude" type="range" min="0.3" max="1.5" step="0.1" value="1"><output id="amplitude-output" for="amplitude">1.0×</output></label><label class="checkbox-control"><input id="trails" type="checkbox" checked> 顯示運動軌跡</label><label class="checkbox-control"><input id="equilibrium" type="checkbox" checked> 顯示平衡位置</label></div>
+      <div class="experiment-settings"><label for="amplitude"><span id="amplitude-label">振動幅度</span><input id="amplitude" type="range" min="0.3" max="1.5" step="0.1" value="1"><output id="amplitude-output" for="amplitude">1.0×</output></label><label class="checkbox-control"><input id="trails" type="checkbox" checked> <span id="trails-label">顯示運動軌跡</span></label><label class="checkbox-control"><input id="equilibrium" type="checkbox" checked> <span id="equilibrium-label">顯示平衡位置</span></label></div>
       <p class="scale-note">播放速度只改變觀看速度。動畫的空間、時間與位移比例經調整，不代表真實比例。</p>
       <div class="learning-grid"><article class="observation"><p class="eyebrow">LOOK CLOSER / 觀察任務</p><h3 id="observation-title"></h3><ol id="observation-steps"></ol></article><article class="understanding"><p class="eyebrow">WHY IT WORKS / 理解原理</p><h3 id="principle-title"></h3><div id="principle-text"></div></article></div>
       <div class="question-box"><span class="question-badge">想一想</span><div><h3 id="question-text"></h3><div id="question-choices" class="question-choices"></div><p id="question-feedback" aria-live="polite"></p></div></div>
@@ -74,7 +75,7 @@
 <section id="planned-page" class="planned-page" hidden><p class="eyebrow">下一階段的學習</p><h1 id="planned-title"></h1><p>這個分頁已建立入口，互動教材尚未製作。目前可完整使用「波的介紹」中的六組實驗。</p><ul id="planned-outline"></ul><a class="solid-link" href="#intro/water">回到波的介紹 →</a></section>
 <section class="sources"><details><summary>資料來源與動畫製作說明</summary><p>互動模型使用 HTML Canvas 自行繪製。定性概念參考以下教育與研究機構；各模型的近似條件列於實驗內。</p><ul><li><a href="https://www.noaa.gov/jetstream/ocean/waves/jetstream-max-anatomy-of-wave" target="_blank" rel="noopener">NOAA：水波與質點軌道</a></li><li><a href="https://www.nidcd.nih.gov/health/how-do-we-hear" target="_blank" rel="noopener">NIH / NIDCD：聲音如何轉換為聽覺</a></li><li><a href="https://science.nasa.gov/ems/02_anatomy/" target="_blank" rel="noopener">NASA：電磁波的結構</a></li><li><a href="https://www.iris.edu/hq/inclass/animation/seismic_wave_motions4_waves_animated" target="_blank" rel="noopener">IRIS / SAGE：四種地震波的運動</a></li><li><a href="https://www.ligo.caltech.edu/page/what-are-gw" target="_blank" rel="noopener">LIGO：什麼是重力波</a></li></ul><p>兩個參考 GIF 由使用者提供，原圖署名為 Daniel A. Russell；其權利歸原作者。本網站自行繪製的模型與參考 GIF 分開呈現。</p></details></section>
 </main>
-<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波的介紹 · v1.1</span></footer>
+<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波的介紹 · v1.2</span></footer>
 <noscript><div class="noscript">請開啟 JavaScript，以使用互動動畫。</div></noscript>
 </body>
 </html>

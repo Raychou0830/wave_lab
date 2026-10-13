@@ -1,6 +1,7 @@
 (function (root) {
   'use strict';
   const M = root.WaveModels;
+  const D = root.Wave3D;
   const C = { bg: '#102632', grid: '#b5d4dd18', rest: '#a6bdc83d', aqua: '#69d9d0', gold: '#f3c567', text: '#d2e8ed', muted: '#9bb7c4', red: '#ff8b9a', purple: '#c8b1f1' };
   const font = '"Noto Sans CJK TC", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif';
   function line(ctx, points, color = C.aqua, width = 1.5, dash = []) {
@@ -48,28 +49,6 @@
   function propagation(ctx, x = 650, y = 44, length = 230, label = '擾動傳播方向') {arrow(ctx,x,y,x+length,y);text(ctx,label,x,y-12,12,C.aqua);}
   function projection(yaw = -.35, pitch = .36, scale = 70, cx = 500, cy = 280) {
     return (x,y,z) => [cx + scale*(x*Math.cos(yaw)+z*Math.sin(yaw)), cy + scale*(-y*Math.cos(pitch)+Math.sin(pitch)*(-x*Math.sin(yaw)+z*Math.cos(yaw)))];
-  }
-  function fittedEMProjection(angle, amplitude) {
-    const camera = projection(angle * Math.PI / 180, .42, 1, 0, 0);
-    // Screen roll keeps the propagation axis horizontal while the 3D view turns.
-    const axis = camera(1,0,0), roll = Math.atan2(axis[1],axis[0]);
-    const unit = (x,y,z) => {
-      const [u,v] = camera(x,y,z);
-      return [u*Math.cos(roll)+v*Math.sin(roll),-u*Math.sin(roll)+v*Math.cos(roll)];
-    };
-    const bounds = [];
-    // Fit the entire possible field envelope, independent of the current phase.
-    // E and B occupy separate planes, so a simultaneous y/z maximum is unnecessary.
-    for (const x of [0,8]) for (const a of [-amplitude,amplitude])
-      bounds.push(unit(x,a,0),unit(x,0,a));
-    bounds.push(unit(0,0,0),unit(8.6,0,0));
-    const xs = bounds.map(p=>p[0]), ys = bounds.map(p=>p[1]);
-    const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
-    const box={left:64,right:925,top:112,bottom:345};
-    const scale=Math.min((box.right-box.left)/(maxX-minX),(box.bottom-box.top)/(maxY-minY));
-    const cx=(box.left+box.right)/2-scale*(minX+maxX)/2;
-    const cy=(box.top+box.bottom)/2-scale*(minY+maxY)/2;
-    return (x,y,z) => {const [u,v]=unit(x,y,z);return [cx+scale*u,cy+scale*v];};
   }
   function path(ctx, fn, from, to, n, color, width, dash = []) {
     const points = [];for(let i=0;i<=n;i++)points.push(fn(from+(to-from)*i/n));line(ctx,points,color,width,dash);
@@ -137,23 +116,6 @@
     text(ctx,'空氣質點的振動方向',500,385,13,C.gold,'center');arrow(ctx,419,403,581,403,C.gold);arrow(ctx,581,403,419,403,C.gold);
     text(ctx,'發聲體 → 空氣壓力變化 → 耳膜／聽小骨 → 內耳 → 聽神經 → 大腦',500,468,13,C.text,'center');
   }
-  function em(ctx,t,o){
-    base(ctx,1000,500);text(ctx,'E ⟂ B ⟂ 傳播方向',50,46,16);text(ctx,'場強以各自最大值正規化',50,81,11,C.muted);
-    const proj=fittedEMProjection(o.angle,o.amplitude);
-    const axis=x=>proj(x,0,0);line(ctx,[axis(0),axis(8.1)],C.rest,1.5,[4,4]);
-    const end=axis(8.6);arrow(ctx,...axis(7.5),...end,C.aqua,2);text(ctx,'傳播 x',end[0]-35,end[1]+28,13,C.aqua);
-    const curve=(which,x)=>{const field=M.em(x,t,o.amplitude);return which==='e'?proj(x,field.e[1],0):proj(x,0,field.b[2]);};
-    for(const [field,show,color] of [['b',o.showB,C.aqua],['e',o.showE,C.red]])if(show){ctx.beginPath();ctx.moveTo(...axis(0));for(let i=0;i<=180;i++)ctx.lineTo(...curve(field,i/180*8));ctx.lineTo(...axis(8));ctx.closePath();ctx.fillStyle=field==='e'?'#ff8b9a13':'#69d9d013';ctx.fill();path(ctx,x=>curve(field,x),0,8,180,color,2.3);for(let i=0;i<=24;i++)arrow(ctx,...axis(i/3),...curve(field,i/3),color,1.1);}
-    const x=3.7,field=M.em(x,t,o.amplitude),p0=axis(x);
-    if(o.equilibrium)dot(ctx,...p0,4,C.gold,true);
-    if(o.showE){arrow(ctx,...p0,...curve('e',x),C.red,3);dot(ctx,...curve('e',x),5,C.red);text(ctx,'E',curve('e',x)[0]+10,curve('e',x)[1]-5,15,C.red);}
-    if(o.showB){arrow(ctx,...p0,...curve('b',x),C.aqua,3);dot(ctx,...curve('b',x),5,C.aqua);text(ctx,'B',curve('b',x)[0]+10,curve('b',x)[1]+18,15,C.aqua);}
-    if(o.trails){if(o.showE)line(ctx,[proj(x,-o.amplitude,0),proj(x,o.amplitude,0)],'#ff8b9a55',1,[3,5]);if(o.showB)line(ctx,[proj(x,0,-o.amplitude),proj(x,0,o.amplitude)],'#69d9d055',1,[3,5]);}
-    const tri=projection(-.35,.42,53,108,410),zero=tri(0,0,0);arrow(ctx,...zero,...tri(1.1,0,0),C.gold);arrow(ctx,...zero,...tri(0,1.1,0),C.red);arrow(ctx,...zero,...tri(0,0,1.1),C.aqua);text(ctx,'x',...tri(1.35,0,0),12,C.gold);text(ctx,'E / y',...tri(0,1.35,0),12,C.red);text(ctx,'B / z',...tri(0,0,1.35),12,C.aqua);
-    // Field value display makes the coupling visible without implying alternating creation.
-    const gaugeX=696;for(const [v,y,col,label] of [[field.e[1],403,C.red,'E / E₀'],[field.b[2],443,C.aqua,'B / B₀']]){line(ctx,[[gaugeX,y],[gaugeX+180,y]],C.rest,2);dot(ctx,gaugeX+90+v/o.amplitude*80,y,5,col);text(ctx,label,gaugeX-70,y+5,12,col);}
-    text(ctx,'同一位置：E 與 B 同步振盪',480,469,12,C.muted,'center');
-  }
   function spring(ctx,t,o){
     base(ctx,1000,500);const longitudinal=o.springType==='longitudinal',scale=98,left=102,mid=258;
     text(ctx,longitudinal?'縱波 · 振動方向平行於傳播方向':'橫波 · 振動方向垂直於傳播方向',53,49,15);propagation(ctx,653,58,235);
@@ -165,19 +127,7 @@
     const a=longitudinal?[435,415,570,415]:[500,367,500,446];arrow(ctx,...a,C.gold);arrow(ctx,a[2],a[3],a[0],a[1],C.gold);text(ctx,longitudinal?'前後振動 ↔':'上下振動 ↕',595,415,13,C.gold);
     text(ctx,longitudinal?'看線圈的疏密向右傳；再看 A 點前後往返。':'看波峰向右傳；再看 A 點上下往返。',500,479,12,C.muted,'center');
   }
-  function seismic(ctx,type,t,o){
-    base(ctx,480,310);const proj=projection(-.43,.42,37,75,157);
-    const pos=(x,d,z,tt=t)=>{const m=M.seismic(type,x,d,z,tt,o.amplitude);return proj(m.x,m.y,m.z);};
-    const maxDepth=2.0;
-    for(let row=4;row>=0;row--){const d=row*maxDepth/4;for(let j=0;j<3;j++){const z=-.8+j*.8;path(ctx,x=>pos(x,d,z),0,8,64,row===0?'#75c8c678':'#78b5c035',1);}}
-    for(let i=0;i<=24;i++){const x=i/3;for(let j=0;j<3;j++){const z=-.8+j*.8;path(ctx,d=>pos(x,d,z),0,maxDepth,16,C.grid,1);for(let row=0;row<=4;row++){const d=row*maxDepth/4;if(o.equilibrium)dot(ctx,...proj(x,-d,z),1,C.rest);dot(ctx,...pos(x,d,z),row===0?2.6:2,row===0?C.aqua:'#579ba6');}}}
-    const mx=4.0,mz=.8,rest=proj(mx,0,mz),p=pos(mx,0,mz);
-    if(o.trails)path(ctx,tt=>pos(mx,0,mz,tt),t-M.TAU/2.4,t,90,C.gold,1.7);marker(ctx,p,'A',rest,o.equilibrium);
-    arrow(ctx,295,37,419,37,C.aqua,1.5);text(ctx,'傳播方向',295,22,11,C.aqua);
-    const label={p:'前後壓縮 / 伸長',s:'上下剪切（SV）',rayleigh:'近地表逆行橢圓',love:'水平左右剪切'}[type];text(ctx,label,240,283,12,C.gold,'center');
-    const axes=projection(-.43,.42,24,397,237),zero=axes(0,0,0);for(const [v,label,col] of [[[1,0,0],'x',C.aqua],[[0,1,0],'上',C.muted],[[0,0,1],'水平',C.gold]]){arrow(ctx,...zero,...axes(...v),col,1.2);const p=axes(...v);text(ctx,label,p[0]+3,p[1],9,col);}
-  }
-  function gravity(ctx,t,o){
+  function gravityDetector(ctx,t,o){
     base(ctx,1000,500);text(ctx,'雙星繞行',56,45,15);text(ctx,'遠處的自由質點環',610,45,15);text(ctx,'垂直於波傳播方向的截面',610,85,11,C.muted);
     const cx=264,cy=256,omega=M.orbitalOmega;
     // Concentric arcs encode propagating phase only; they are not a material sheet.
@@ -199,5 +149,120 @@
     text(ctx,polar==='plus'?'+ 偏振：水平與垂直交替伸縮':'× 偏振：伸縮軸旋轉 45°',771,431,12,C.gold,'center');
     text(ctx,'f重力波 = 2 f繞行（圓形雙星近似）',264,477,13,C.text,'center');text(ctx,'伸縮幅度大幅誇張；網格表示距離變化',771,477,11,C.muted,'center');
   }
-  root.WaveRenderers={water,sound,em,spring,seismic,gravity,colors:C,fittedEMProjection};
+  function compass(ctx,proj,x,y){
+    if((ctx.displayScale||1)<.6)return;
+    for(const [v,name,color] of [[[1,0,0],'x',C.gold],[[0,1,0],'y',C.red],[[0,0,1],'z',C.aqua]]){
+      const dir=proj.direction(...v),end=[x+dir[0]*52,y+dir[1]*52];
+      if(Math.hypot(...dir)<.15){dot(ctx,x,y,5,color,true);text(ctx,name+(proj.facing(...v)>=0?' ⊙':' ⊗'),x+12,y+5,16,color);}
+      else{arrow(ctx,x,y,...end,color,1.5);text(ctx,name,end[0]+6,end[1]+5,16,color);}
+    }
+  }
+  function em(ctx,t,o){
+    base(ctx,1000,600);
+    const max=Math.max(o.amplitude*1.1,1.25),view=o.camera||D.viewDefault('em');
+    const p=D.camera(view,[4,0,0],{x:[-.65,9],y:[-max,max],z:[-max,max]},{left:55,right:945,top:110,bottom:450});
+    text(ctx,'E ⟂ B ⟂ x',50,55,20);
+    const axis=x=>p(x,0,0),curve=(key,x)=>{const m=M.em(x,t,o.amplitude);return key==='e'?p(x,m.e[1],0):p(x,0,m.b[2]);};
+    const patches=[];
+    for(const [key,show] of [['b',o.showB],['e',o.showE]])if(show){
+      for(let i=0;i<100;i++){const x=i*.08,pts=[axis(x),curve(key,x),curve(key,x+.08),axis(x+.08)];patches.push(D.item(pts,key==='e'?'#ff8b9a21':'#69d9d021',null));}
+    }
+    D.paint(ctx,patches);
+    line(ctx,[axis(0),axis(8.2)],C.rest,1.5,[4,5]);
+    arrow(ctx,...axis(7.5).slice(0,2),...axis(9).slice(0,2),C.gold,2.5);
+    const end=axis(9),toward=Math.hypot(...p.direction(1,0,0))<.15;
+    if(toward)dot(ctx,end[0],end[1],7,C.gold,true);
+    const labelScale=ctx.displayScale||1;
+    text(ctx,(toward?(p.facing(1,0,0)>=0?'⊙ ':'⊗ '):'')+'傳播 x',end[0]+Math.max(12,25/labelScale),end[1]+26,16,C.gold);
+    for(const [key,show,color] of [['b',o.showB,C.aqua],['e',o.showE,C.red]])if(show){
+      path(ctx,x=>curve(key,x).slice(0,2),0,8,180,color,2.7);
+      for(let i=0;i<=24;i++)arrow(ctx,...axis(i/3).slice(0,2),...curve(key,i/3).slice(0,2),color,1.3);
+    }
+    const x=3.7,here=axis(x),field=M.em(x,t,o.amplitude);
+    if(o.equilibrium)dot(ctx,here[0],here[1],5,C.gold,true);
+    for(const [key,show,color,label] of [['e',o.showE,C.red,'E'],['b',o.showB,C.aqua,'B']])if(show){
+      const tip=curve(key,x);arrow(ctx,here[0],here[1],tip[0],tip[1],color,3.2);dot(ctx,tip[0],tip[1],5,color);
+      text(ctx,label,tip[0]+14,tip[1]+(key==='e'?-Math.max(13,20/labelScale):Math.max(28,32/labelScale)),18,color);
+      if(o.trails){const points=key==='e'?[p(x,-o.amplitude,0),p(x,o.amplitude,0)]:[p(x,0,-o.amplitude),p(x,0,o.amplitude)];line(ctx,points.map(q=>q.slice(0,2)),color+'66',1,[3,5]);}
+    }
+    compass(ctx,p,112,525);
+    text(ctx,`E / E₀ = ${(field.e[1]/o.amplitude).toFixed(2)}     B / B₀ = ${(field.b[2]/o.amplitude).toFixed(2)}`,540,555,16,C.muted,'center');
+  }
+  function seismic(ctx,type,t,o){
+    base(ctx,480,310);
+    const p=D.camera(o.camera||D.viewDefault('seismic'),[4,-1,0],{x:[-.6,8.6],y:[-2.7,1.1],z:[-1.6,1.6]},{left:20,right:460,top:44,bottom:245});
+    const pos=(x,d,z,tt=t)=>{const m=M.seismic(type,x,d,z,tt,o.amplitude);return p(m.x,m.y,m.z);};
+    const lines=[],dots=[];
+    for(let row=0;row<=4;row++)for(let j=0;j<3;j++){
+      const depth=row*.5,z=-.8+j*.8;
+      for(let i=0;i<32;i++)lines.push(D.item([pos(i/4,depth,z),pos((i+1)/4,depth,z)],null,row===0?'#75c8c699':'#78b5c048',1));
+      for(let i=0;i<=24;i++){
+        const x=i/3,q=pos(x,depth,z);
+        if(o.equilibrium){const rest=p(x,-depth,z);dots.push({depth:rest[2],draw:c=>dot(c,rest[0],rest[1],1,C.rest)});}
+        dots.push({depth:q[2],draw:c=>dot(c,q[0],q[1],row===0?2.7:2,row===0?C.aqua:'#579ba6')});
+      }
+    }
+    for(let i=0;i<=24;i++)for(let j=0;j<3;j++)for(let row=0;row<4;row++)lines.push(D.item([pos(i/3,row*.5,-.8+j*.8),pos(i/3,(row+1)*.5,-.8+j*.8)],null,C.grid,.8));
+    D.paint(ctx,lines);D.paint(ctx,dots);
+    const a=pos(4,0,.8),rest=p(4,0,.8);
+    if(o.trails)path(ctx,tt=>pos(4,0,.8,tt).slice(0,2),t-M.TAU/2.4,t,90,C.gold,1.8);
+    marker(ctx,a.slice(0,2),'A',rest.slice(0,2),o.equilibrium);
+    const begin=p(0,.95,1.25),end=p(8,.95,1.25);arrow(ctx,begin[0],begin[1],end[0],end[1],C.gold,1.7);
+    const aligned=Math.hypot(...p.direction(1,0,0))<.15;
+    if(aligned)dot(ctx,end[0],end[1],6,C.gold,true);
+    text(ctx,(aligned?(p.facing(1,0,0)>=0?'⊙ ':'⊗ '):'')+'傳播 x',240,30,16,C.gold,'center');
+    text(ctx,{p:'前後壓縮 / 伸長',s:'上下剪切（SV）',rayleigh:'近地表逆行橢圓',love:'水平左右剪切'}[type],240,287,16,C.gold,'center');
+  }
+  function gravityHeight(x,z,t,o){
+    const stars=M.binary(t),r=Math.hypot(x,z);
+    let well=0;
+    for(const s of stars)well-=.62/Math.sqrt((x-.82*s.x)**2+(z-.82*s.y)**2+.16);
+    const ripple=.38*o.amplitude*(1-Math.exp(-r*r*.6))*Math.cos(2.75*r-2*M.orbitalOmega*t)/Math.sqrt(1+.14*r);
+    return well+ripple;
+  }
+  function gravity(ctx,t,o){
+    if(o.gravityView==='detector'){gravityDetector(ctx,t,o);return;}
+    base(ctx,1000,600);
+    text(ctx,'時空網格（概念示意）',50,52,20);
+    const size=34,step=12/size,grid=[],items=[];
+    const envelope=[];
+    // A phase-independent envelope follows the sheet, rather than an empty cube.
+    for(let j=0;j<=size;j++)for(let i=0;i<=size;i++){
+      const x=-6+i*step,z=-6+j*step,r=Math.hypot(x,z),wave=.38*o.amplitude;
+      const low=Math.max(-2.6,-1.24/Math.sqrt(Math.max(0,r-.82)**2+.16)-wave);
+      const high=-1.24/Math.sqrt((r+.82)**2+.16)+wave+.25;
+      envelope.push([x,low,z],[x,high,z]);
+    }
+    for(const x of [-1,1])for(const z of [-1,1])envelope.push([x,.5,z]);
+    const p=D.camera(o.camera||D.viewDefault('gravity'),[0,-.7,0],{x:[-6,6],y:[-2.8,.8],z:[-6,6]},{left:40,right:960,top:85,bottom:530},envelope);
+    for(let j=0;j<=size;j++){
+      const row=[];for(let i=0;i<=size;i++){const x=-6+i*step,z=-6+j*step,h=gravityHeight(x,z,t,o);row.push({p:p(x,h,z),h});}grid.push(row);
+    }
+    for(let j=0;j<size;j++)for(let i=0;i<size;i++){
+      const a=grid[j][i],b=grid[j][i+1],c=grid[j+1][i+1],d=grid[j+1][i];
+      const r=Math.hypot(-6+(i+.5)*step,-6+(j+.5)*step),crest=(1+Math.cos(2.75*r-2*M.orbitalOmega*t))*.5;
+      const light=D.clamp(.22+.63*crest+(a.h-c.h)*.25,.15,1),blue=Math.round(35+light*60),green=Math.round(24+light*36),red=Math.round(18+light*22);
+      items.push(D.item([a.p,b.p,c.p,d.p],`rgb(${red},${green},${blue})`,'#a4b8de65',.6));
+    }
+    const stars=M.binary(t);
+    stars.forEach((s,i)=>{
+      const point=p(.82*s.x,.18,.82*s.y),radius=15*(p.scale/32);
+      items.push({depth:point[2],draw:c=>{
+        const black=o.binaryType!=='neutron',r=Math.max(6,radius);
+        const gradient=c.createRadialGradient(point[0]-r*.3,point[1]-r*.3,r*.05,point[0],point[1],r);
+        gradient.addColorStop(0,black?'#171d2b':i?'#fff7df':'#e5f9ff');gradient.addColorStop(.55,black?'#05070c':i?'#ffd7a0':'#9ddfff');gradient.addColorStop(1,black?'#000107':'#557db5');
+        c.beginPath();c.arc(point[0],point[1],r,0,M.TAU);c.fillStyle=gradient;c.fill();c.strokeStyle=black?'#7a8dad':'#dbeeff';c.lineWidth=1;c.stroke();
+      }});
+    });
+    D.paint(ctx,items);
+    if(o.equilibrium)path(ctx,a=>p(.82*Math.cos(a),.18,.82*Math.sin(a)).slice(0,2),0,M.TAU,100,'#d5deedaa',1,[4,4]);
+    if(o.trails)for(const [angle,color] of [[0,'#bdc6de77'],[Math.PI,'#bdc6de44']])path(ctx,a=>p(.82*Math.cos(a+angle),.18,.82*Math.sin(a+angle)).slice(0,2),M.orbitalOmega*t-1.6,M.orbitalOmega*t,50,color,1.5);
+    for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5]){
+      const start=[2.5*Math.cos(a),2.5*Math.sin(a)],finish=[5.35*Math.cos(a),5.35*Math.sin(a)];
+      const q=p(start[0],gravityHeight(...start,t,o)+.18,start[1]),r=p(finish[0],gravityHeight(...finish,t,o)+.18,finish[1]);arrow(ctx,q[0],q[1],r[0],r[1],'#e3ebffdd',2.5);
+    }
+    const near=p(0,.32,0);text(ctx,o.binaryType==='neutron'?'雙中子星':'雙黑洞',near[0]+25,near[1]-25,18,C.text);
+    text(ctx,'起伏與凹陷為示意；可切換「距離伸縮」觀察重力波效應。',500,561,16,C.muted,'center');
+  }
+  root.WaveRenderers={water,sound,em,spring,seismic,gravity,gravityHeight,colors:C};
 })(typeof globalThis !== 'undefined' ? globalThis : window);
