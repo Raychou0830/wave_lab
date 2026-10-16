@@ -11,17 +11,20 @@
   <script defer src="models.js"></script>
   <script defer src="scene3d.js"></script>
   <script defer src="renderers.js"></script>
+  <script defer src="classification-models.js"></script>
+  <script defer src="classification-renderers.js"></script>
+  <script defer src="classification.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">跳到主要內容</a>
 <header class="site-header">
   <a class="brand" href="#intro/water" aria-label="波動實驗室首頁"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M2 18Q10 0 18 18T34 18M2 27Q10 9 18 27T34 27"/></svg><span>波動實驗室<small>WAVE LAB · 互動物理</small></span></a>
-  <span class="edition">國中・高中銜接 <span>01 / 07</span></span>
+  <span class="edition">國中・高中銜接 <span id="chapter-number">01 / 07</span></span>
 </header>
 <nav class="chapter-nav" aria-label="課程分頁">
   <a href="#intro/water" data-chapter="intro" aria-current="page"><span>01</span> 波的介紹</a>
-  <a href="#types" data-chapter="types"><span>02</span> 波的種類 <small>規劃中</small></a>
+  <a href="#types/medium" data-chapter="types"><span>02</span> 波的分類</a>
   <a href="#periodic" data-chapter="periodic"><span>03</span> 週期波的性質 <small>規劃中</small></a>
   <a href="#speed" data-chapter="speed"><span>04</span> 波速、頻率與週期 <small>規劃中</small></a>
   <a href="#spectrum" data-chapter="spectrum"><span>05</span> 常見電磁波 <small>規劃中</small></a>
@@ -72,10 +75,39 @@
   </section>
   <section class="wrap-up"><p class="eyebrow">帶走一個觀念</p><h2>「看起來在前進」<br>不代表「每個點都在前進」。</h2><p>水、空氣、彈簧和岩石有各自的振動方式；<br>電磁波與重力波則不需要物質介質來傳播。</p></section>
 </div>
-<section id="planned-page" class="planned-page" hidden><p class="eyebrow">下一階段的學習</p><h1 id="planned-title"></h1><p>這個分頁已建立入口，互動教材尚未製作。目前可完整使用「波的介紹」中的六組實驗。</p><ul id="planned-outline"></ul><a class="solid-link" href="#intro/water">回到波的介紹 →</a></section>
+<div id="classification-page" hidden>
+  <section class="cls-intro" aria-labelledby="classification-title"><h1 id="classification-title">02 波的分類</h1><p>需要介質嗎？怎麼振動？能量怎麼傳遞？<br>換一個觀察角度，同一個波可以有不同的分類。</p></section>
+  <div class="big-idea"><span class="idea-mark">分類角度</span><p><strong>三種依據，分開判斷。</strong>例如：空氣中的聲波既是力學波，也是縱波；是否形成駐波，要再看反向波的疊加。</p></div>
+  <section class="lab-layout" aria-label="波的分類互動實驗">
+    <aside class="experiment-menu"><div class="wave-menu">
+      <button data-cls-mode="medium" aria-pressed="true"><span class="menu-no">01</span><span><strong>需要介質嗎？</strong><small>力學波／非力學波</small></span></button>
+      <button data-cls-mode="direction" aria-pressed="false"><span class="menu-no">02</span><span><strong>振動與傳播方向</strong><small>縱波／橫波</small></span></button>
+      <button data-cls-mode="energy" aria-pressed="false"><span class="menu-no">03</span><span><strong>能量傳播與疊加</strong><small>行進波／駐波</small></span></button>
+      <button data-cls-mode="particles" aria-pressed="false"><span class="menu-no">04</span><span><strong>每個質點怎麼動？</strong><small>波形與瞬時速度</small></span></button>
+    </div><div class="menu-note"><span class="tiny-dot"></span><p>波向哪裡傳？<br>點又怎麼動？</p></div></aside>
+    <div class="experiment-body">
+      <div class="experiment-heading"><h2 id="cls-title">傳播需要介質嗎？</h2><span id="cls-tag" class="type-tag">力學波／非力學波</span></div>
+      <p id="cls-description" class="mode-description"></p>
+      <div id="cls-panel" class="lab-panel">
+        <div class="lab-topbar"><span><i id="cls-dot" class="status-dot"></i> <span id="cls-running">播放中</span></span><span class="model-label">分類實驗・位移已放大</span><button id="cls-fullscreen" class="icon-button" aria-label="全螢幕顯示分類動畫">⛶</button></div>
+        <div id="cls-controls" class="context-controls cls-controls"></div>
+        <div id="cls-stage" class="canvas-wrap cls-stage"><canvas id="cls-canvas" width="1000" height="620" role="img" aria-label="波的分類互動動畫"></canvas><p id="cls-fallback" hidden>瀏覽器不支援 Canvas，請使用較新的瀏覽器。</p></div>
+        <p id="cls-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
+        <div id="cls-legend" class="legend"></div>
+        <div class="transport"><div class="transport-buttons"><button id="cls-play" class="play-button">❚❚ 暫停</button><button id="cls-step">逐格 +</button><button id="cls-reset">↺ 重設</button></div><label class="speed-control" for="cls-speed">播放速度 <input id="cls-speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="cls-speed-out" for="cls-speed">1.0×</output></label><span class="time-readout">動畫時間 <output id="cls-time">0.00</output> s</span></div>
+      </div>
+      <div id="cls-readouts" class="cls-readouts"></div><p id="cls-status-text" class="cls-status-text"></p>
+      <section id="cls-records" class="cls-records" aria-labelledby="cls-record-title"><div class="cls-record-heading"><h3 id="cls-record-title">我的介質觀察紀錄</h3><button id="cls-clear-records">清除紀錄</button></div><p>每換一種穩定狀態，按「加入觀察紀錄」留下比較結果。同一介質再次記錄會更新該列。</p><div class="cls-table-wrap"><table><thead><tr><th scope="col">介質</th><th scope="col">測量條件</th><th scope="col">聲速</th><th scope="col">光速</th></tr></thead><tbody id="cls-record-body"></tbody></table></div><p id="cls-announcement" class="cls-announcement" aria-live="polite"></p></section>
+      <div class="learning-grid"><article class="observation"><h3 id="cls-task-title"></h3><ol id="cls-tasks"></ol></article><article class="understanding"><h3 id="cls-principle-title"></h3><div id="cls-principle"></div></article></div>
+      <details class="model-notes"><summary>給老師：模型條件、公式與速率來源</summary><div id="cls-notes"></div><ul class="cls-source-list"><li><a href="https://openstax.org/books/university-physics-volume-1/pages/17-2-speed-of-sound" target="_blank" rel="noopener">OpenStax：聲速與介質、溫度</a></li><li><a href="https://resource.npl.co.uk/acoustics/techguides/soundseawater/underlying-phys.html" target="_blank" rel="noopener">NPL：Chen–Millero 聲速公式</a></li><li><a href="https://www.cambridge.org/core/journals/journal-of-glaciology/article/antarctic-icesheet-structures-retrieved-from-pwave-coda-autocorrelation-method-and-comparisons-with-two-other-singlestation-passive-seismic-methods/0F38DAA33A00FC2ABC10E734CF0D90DE" target="_blank" rel="noopener">Journal of Glaciology：冰中縱波速度</a></li><li><a href="https://ntrs.nasa.gov/api/citations/19710021465/downloads/19710021465.pdf" target="_blank" rel="noopener">NASA：水、冰的可見光折射率參考</a></li><li><a href="https://www.phys.unsw.edu.au/jw/strings.html" target="_blank" rel="noopener">UNSW：反射、疊加與駐波</a></li></ul></details>
+      <div class="experiment-next"><a href="#intro/water">← 回到 01 波的介紹</a><a href="#periodic">03 週期波的性質（規劃中）→</a></div>
+    </div>
+  </section>
+</div>
+<section id="planned-page" class="planned-page" hidden><p class="eyebrow">下一階段的學習</p><h1 id="planned-title"></h1><p>這個分頁已建立入口，互動教材尚未製作。目前可使用「波的介紹」及「波的分類」。</p><ul id="planned-outline"></ul><a class="solid-link" href="#types/medium">回到波的分類 →</a></section>
 <section class="sources"><details><summary>資料來源與動畫製作說明</summary><p>互動模型使用 HTML Canvas 自行繪製。定性概念參考以下教育與研究機構；各模型的近似條件列於實驗內。</p><ul><li><a href="https://www.noaa.gov/jetstream/ocean/waves/jetstream-max-anatomy-of-wave" target="_blank" rel="noopener">NOAA：水波與質點軌道</a></li><li><a href="https://www.nidcd.nih.gov/health/how-do-we-hear" target="_blank" rel="noopener">NIH / NIDCD：聲音如何轉換為聽覺</a></li><li><a href="https://science.nasa.gov/ems/02_anatomy/" target="_blank" rel="noopener">NASA：電磁波的結構</a></li><li><a href="https://www.iris.edu/hq/inclass/animation/seismic_wave_motions4_waves_animated" target="_blank" rel="noopener">IRIS / SAGE：四種地震波的運動</a></li><li><a href="https://www.ligo.caltech.edu/page/what-are-gw" target="_blank" rel="noopener">LIGO：什麼是重力波</a></li></ul><p>兩個參考 GIF 由使用者提供，原圖署名為 Daniel A. Russell；其權利歸原作者。本網站自行繪製的模型與參考 GIF 分開呈現。</p></details></section>
 </main>
-<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波的介紹 · v1.2</span></footer>
+<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波的介紹・波的分類 · v1.3</span></footer>
 <noscript><div class="noscript">請開啟 JavaScript，以使用互動動畫。</div></noscript>
 </body>
 </html>

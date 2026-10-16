@@ -47,7 +47,6 @@
     }
   };
   const planned = {
-    types:{title:'波的種類',outline:['機械波與非機械波','橫波、縱波與表面波','振動方向與傳播方向的判讀']},
     periodic:{title:'週期波的性質',outline:['波峰、波谷、振幅與波長','週期與頻率','位置—位移圖與時間—位移圖']},
     speed:{title:'波速、頻率與週期',outline:['v = fλ = λ / T','固定介質中，改變頻率對波長的影響','跨介質時的波速、波長與頻率']},
     spectrum:{title:'常見電磁波',outline:['無線電波、微波、紅外線與可見光','紫外線、X 射線與 γ 射線','頻率、波長與生活應用']},
@@ -130,10 +129,13 @@
   }
   function route(){
     const parts=location.hash.slice(1).split('/'),chapter=parts[0]||'intro';
-    if(planned[chapter]){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter=chapter;$('intro-page').hidden=true;$('planned-page').hidden=false;$('planned-title').textContent=planned[chapter].title;$('planned-outline').innerHTML=planned[chapter].outline.map(s=>`<li>${s}</li>`).join('');}
+    WaveClassification.hide();$('classification-page').hidden=chapter!=='types';
+    if(chapter==='types'){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter='types';$('intro-page').hidden=true;$('planned-page').hidden=true;WaveClassification.activate(parts[1]);}
+    else if(planned[chapter]){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter=chapter;$('intro-page').hidden=true;$('planned-page').hidden=false;$('planned-title').textContent=planned[chapter].title;$('planned-outline').innerHTML=planned[chapter].outline.map(s=>`<li>${s}</li>`).join('');}
     else if(chapter==='experiment'){state.chapter='intro';$('intro-page').hidden=false;$('planned-page').hidden=true;if(!contentReady)selectMode(state.mode);}
     else{state.chapter='intro';$('intro-page').hidden=false;$('planned-page').hidden=true;selectMode(modes.includes(parts[1])?parts[1]:'water');}
     document.querySelectorAll('[data-chapter]').forEach(a=>{if(a.dataset.chapter===state.chapter)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+    $('chapter-number').textContent=String(['intro','types','periodic','speed','spectrum','echo','music'].indexOf(state.chapter)+1).padStart(2,'0')+' / 07';
   }
   function syncPlayback(){
     $('play').textContent=state.playing?'❚❚ 暫停':'▶ 播放';$('play').setAttribute('aria-label',state.playing?'暫停動畫':'播放動畫');$('running-label').textContent=state.playing?'播放中':'已暫停';$('status-dot').classList.toggle('paused',!state.playing);updateTone();
@@ -189,6 +191,6 @@
       updateCameraReadout();draw();
     });
   }
-  function frame(timestamp){if(state.last===null)state.last=timestamp;const dt=Math.min(Math.max((timestamp-state.last)/1000,0),.05);state.last=timestamp;if(state.playing&&state.chapter==='intro'&&!document.hidden){state.t+=dt*state.speed;draw();}window.requestAnimationFrame(frame);}
+  function frame(timestamp){if(state.last===null)state.last=timestamp;const dt=Math.min(Math.max((timestamp-state.last)/1000,0),.05);state.last=timestamp;if(state.playing&&state.chapter==='intro'&&!document.hidden){state.t+=dt*state.speed;draw();}WaveClassification.tick(dt);window.requestAnimationFrame(frame);}
   route();window.requestAnimationFrame(frame);
 })();
