@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="用可暫停、逐格播放與追蹤質點的互動動畫，探索水波、聲波、電磁波、彈簧波、地震波與重力波。">
+  <meta name="description" content="從波的介紹與分類，逐步探索週期波、波速關係及電磁波頻譜的繁體中文互動教材。">
   <meta name="theme-color" content="#102c39">
   <title>波動實驗室｜讓看不見的波，變得看得見</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -14,6 +14,9 @@
   <script defer src="classification-models.js"></script>
   <script defer src="classification-renderers.js"></script>
   <script defer src="classification.js"></script>
+  <script defer src="advanced-models.js"></script>
+  <script defer src="advanced-renderers.js"></script>
+  <script defer src="advanced.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
@@ -25,9 +28,9 @@
 <nav class="chapter-nav" aria-label="課程分頁">
   <a href="#intro/water" data-chapter="intro" aria-current="page"><span>01</span> 波的介紹</a>
   <a href="#types/medium" data-chapter="types"><span>02</span> 波的分類</a>
-  <a href="#periodic" data-chapter="periodic"><span>03</span> 週期波的性質 <small>規劃中</small></a>
-  <a href="#speed" data-chapter="speed"><span>04</span> 波速、頻率與週期 <small>規劃中</small></a>
-  <a href="#spectrum" data-chapter="spectrum"><span>05</span> 常見電磁波 <small>規劃中</small></a>
+  <a href="#periodic/anatomy" data-chapter="periodic"><span>03</span> 週期波的性質</a>
+  <a href="#speed/same" data-chapter="speed"><span>04</span> 波速與頻率、波長、週期</a>
+  <a href="#spectrum/spectrum" data-chapter="spectrum"><span>05</span> 常見的電磁波</a>
   <a href="#echo" data-chapter="echo"><span>06</span> 回聲 <small>規劃中</small></a>
   <a href="#music" data-chapter="music"><span>07</span> 樂音三要素 <small>規劃中</small></a>
 </nav>
@@ -104,10 +107,46 @@
     </div>
   </section>
 </div>
-<section id="planned-page" class="planned-page" hidden><p class="eyebrow">下一階段的學習</p><h1 id="planned-title"></h1><p>這個分頁已建立入口，互動教材尚未製作。目前可使用「波的介紹」及「波的分類」。</p><ul id="planned-outline"></ul><a class="solid-link" href="#types/medium">回到波的分類 →</a></section>
-<section class="sources"><details><summary>資料來源與動畫製作說明</summary><p>互動模型使用 HTML Canvas 自行繪製。定性概念參考以下教育與研究機構；各模型的近似條件列於實驗內。</p><ul><li><a href="https://www.noaa.gov/jetstream/ocean/waves/jetstream-max-anatomy-of-wave" target="_blank" rel="noopener">NOAA：水波與質點軌道</a></li><li><a href="https://www.nidcd.nih.gov/health/how-do-we-hear" target="_blank" rel="noopener">NIH / NIDCD：聲音如何轉換為聽覺</a></li><li><a href="https://science.nasa.gov/ems/02_anatomy/" target="_blank" rel="noopener">NASA：電磁波的結構</a></li><li><a href="https://www.iris.edu/hq/inclass/animation/seismic_wave_motions4_waves_animated" target="_blank" rel="noopener">IRIS / SAGE：四種地震波的運動</a></li><li><a href="https://www.ligo.caltech.edu/page/what-are-gw" target="_blank" rel="noopener">LIGO：什麼是重力波</a></li></ul><p>兩個參考 GIF 由使用者提供，原圖署名為 Daniel A. Russell；其權利歸原作者。本網站自行繪製的模型與參考 GIF 分開呈現。</p></details></section>
+<div id="periodic-page" class="advanced-page" hidden>
+  <section class="cls-intro"><h1>03 週期波的性質</h1><p>從空間圖讀波長，從時間圖讀週期。</p></section>
+  <section class="lab-layout" aria-label="週期波的性質互動實驗"><aside class="experiment-menu"><div class="wave-menu"><button data-adv-chapter="periodic" data-adv-mode="anatomy" aria-pressed="true"><span class="menu-no">01</span><span><strong>讀懂一張波形</strong><small>波峰・波谷・振幅・波長</small></span></button><button data-adv-chapter="periodic" data-adv-mode="graphs" aria-pressed="false"><span class="menu-no">02</span><span><strong>x–y 與 y–t 圖連動</strong><small>空間圖・時間圖</small></span></button></div></aside><div class="experiment-body">
+   <div class="experiment-heading"><h2 id="periodic-title"></h2><span id="periodic-tag" class="type-tag"></span></div><p id="periodic-description" class="mode-description"></p>
+   <div id="periodic-panel" class="lab-panel"><div class="lab-topbar"><span><i id="periodic-dot" class="status-dot"></i> <span id="periodic-running">播放中</span></span><span class="model-label">互動模型・數值與圖形同步</span><button id="periodic-fullscreen" class="icon-button" aria-label="全螢幕顯示動畫">⛶</button></div>
+    <div id="periodic-controls" class="context-controls adv-controls"></div><div id="periodic-stage" class="canvas-wrap adv-stage"><canvas id="periodic-canvas" width="1000" height="620" role="img" aria-label="週期波的性質互動動畫"></canvas></div><p id="periodic-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
+    <div id="periodic-transport" class="transport"><div class="transport-buttons"><button id="periodic-play" class="play-button">❚❚ 暫停</button><button id="periodic-step">逐格 +</button><button id="periodic-reset">↺ 重設</button></div><label class="speed-control" for="periodic-speed">播放速度 <input id="periodic-speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="periodic-speed-out">1.0×</output></label><span class="time-readout">動畫時間 <output id="periodic-time">0.00</output> s</span></div>
+   </div>
+   <div class="learning-grid"><article class="observation"><h3 id="periodic-task-title"></h3><ol id="periodic-tasks"></ol></article><article class="understanding"><h3 id="periodic-principle-title"></h3><div id="periodic-principle"></div></article></div>
+   <details class="model-notes"><summary>給老師：模型條件與公式</summary><div id="periodic-notes"></div></details>
+   <div class="experiment-next"><a href="#types/medium">← 02 波的分類</a><a href="#speed/same">04 波速與頻率、波長、週期 →</a></div>
+  </div></section></div>
+<div id="speed-page" class="advanced-page" hidden>
+  <section class="cls-intro"><h1>04 波速與頻率、波長、週期</h1><p>操作公式 v＝fλ＝λ/T，辨認情境中的不變量。</p></section>
+  <section class="lab-layout" aria-label="波速與頻率、波長、週期互動實驗"><aside class="experiment-menu"><div class="wave-menu"><button data-adv-chapter="speed" data-adv-mode="same" aria-pressed="true"><span class="menu-no">01</span><span><strong>同一介質改變頻率</strong><small>v 固定，f 與 λ 反向</small></span></button><button data-adv-chapter="speed" data-adv-mode="cross" aria-pressed="false"><span class="menu-no">02</span><span><strong>波跨越兩種介質</strong><small>f 不變，v 與 λ 同向</small></span></button><button data-adv-chapter="speed" data-adv-mode="calculator" aria-pressed="false"><span class="menu-no">03</span><span><strong>公式關係計算器</strong><small>自由設定與驗算</small></span></button></div></aside><div class="experiment-body">
+   <div class="experiment-heading"><h2 id="speed-title"></h2><span id="speed-tag" class="type-tag"></span></div><p id="speed-description" class="mode-description"></p>
+   <div id="speed-panel" class="lab-panel"><div class="lab-topbar"><span><i id="speed-dot" class="status-dot"></i> <span id="speed-running">播放中</span></span><span class="model-label">互動模型・數值與圖形同步</span><button id="speed-fullscreen" class="icon-button" aria-label="全螢幕顯示動畫">⛶</button></div>
+    <div id="speed-controls" class="context-controls adv-controls"></div><div id="speed-stage" class="canvas-wrap adv-stage"><canvas id="speed-canvas" width="1000" height="620" role="img" aria-label="波速與頻率、波長、週期互動動畫"></canvas></div><p id="speed-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
+    <div id="speed-transport" class="transport"><div class="transport-buttons"><button id="speed-play" class="play-button">❚❚ 暫停</button><button id="speed-step">逐格 +</button><button id="speed-reset">↺ 重設</button></div><label class="speed-control" for="speed-speed">播放速度 <input id="speed-speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="speed-speed-out">1.0×</output></label><span class="time-readout">動畫時間 <output id="speed-time">0.00</output> s</span></div>
+   </div>
+   <div class="learning-grid"><article class="observation"><h3 id="speed-task-title"></h3><ol id="speed-tasks"></ol></article><article class="understanding"><h3 id="speed-principle-title"></h3><div id="speed-principle"></div></article></div>
+   <details class="model-notes"><summary>給老師：模型條件與公式</summary><div id="speed-notes"></div></details>
+   <div class="experiment-next"><a href="#periodic/anatomy">← 03 週期波的性質</a><a href="#spectrum/spectrum">05 常見的電磁波 →</a></div>
+  </div></section></div>
+<div id="spectrum-page" class="advanced-page" hidden>
+  <section class="cls-intro"><h1>05 常見的電磁波</h1><p>在對數尺度上連結波段、波長、能量與生活應用。</p></section>
+  <section class="lab-layout" aria-label="常見的電磁波互動實驗"><aside class="experiment-menu"><div class="wave-menu"><button data-adv-chapter="spectrum" data-adv-mode="spectrum" aria-pressed="true"><span class="menu-no">01</span><span><strong>電磁波頻譜</strong><small>從無線電波到 γ 射線</small></span></button><button data-adv-chapter="spectrum" data-adv-mode="walls" aria-pressed="false"><span class="menu-no">02</span><span><strong>Wi‑Fi 為何能穿牆？</strong><small>材料與頻率的交互作用</small></span></button></div></aside><div class="experiment-body">
+   <div class="experiment-heading"><h2 id="spectrum-title"></h2><span id="spectrum-tag" class="type-tag"></span></div><p id="spectrum-description" class="mode-description"></p>
+   <div id="spectrum-panel" class="lab-panel"><div class="lab-topbar"><span><i id="spectrum-dot" class="status-dot"></i> <span id="spectrum-running">播放中</span></span><span class="model-label">互動模型・數值與圖形同步</span><button id="spectrum-fullscreen" class="icon-button" aria-label="全螢幕顯示動畫">⛶</button></div>
+    <div id="spectrum-controls" class="context-controls adv-controls"></div><div id="spectrum-stage" class="canvas-wrap adv-stage"><canvas id="spectrum-canvas" width="1000" height="620" role="img" aria-label="常見的電磁波互動動畫"></canvas></div><p id="spectrum-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
+    <div id="spectrum-transport" class="transport"><div class="transport-buttons"><button id="spectrum-play" class="play-button">❚❚ 暫停</button><button id="spectrum-step">逐格 +</button><button id="spectrum-reset">↺ 重設</button></div><label class="speed-control" for="spectrum-speed">播放速度 <input id="spectrum-speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="spectrum-speed-out">1.0×</output></label><span class="time-readout">動畫時間 <output id="spectrum-time">0.00</output> s</span></div>
+   </div>
+   <div class="learning-grid"><article class="observation"><h3 id="spectrum-task-title"></h3><ol id="spectrum-tasks"></ol></article><article class="understanding"><h3 id="spectrum-principle-title"></h3><div id="spectrum-principle"></div></article></div>
+   <details class="model-notes"><summary>給老師：模型條件與公式</summary><div id="spectrum-notes"></div></details>
+   <div class="experiment-next"><a href="#speed/same">← 04 波速與頻率、波長、週期</a><a href="#echo">06 回聲（規劃中） →</a></div>
+  </div></section></div>
+<section id="planned-page" class="planned-page" hidden><p class="eyebrow">下一階段的學習</p><h1 id="planned-title"></h1><p>這個分頁已建立入口，互動教材尚未製作。目前可使用第 01～05 頁的互動教材。</p><ul id="planned-outline"></ul><a class="solid-link" href="#spectrum/spectrum">回到常見的電磁波 →</a></section>
+<section class="sources"><details><summary>資料來源與動畫製作說明</summary><p>互動模型使用 HTML Canvas 自行繪製。定性概念參考以下教育與研究機構；各模型的近似條件列於實驗內。</p><ul><li><a href="https://www.noaa.gov/jetstream/ocean/waves/jetstream-max-anatomy-of-wave" target="_blank" rel="noopener">NOAA：水波與質點軌道</a></li><li><a href="https://www.nidcd.nih.gov/health/how-do-we-hear" target="_blank" rel="noopener">NIH / NIDCD：聲音如何轉換為聽覺</a></li><li><a href="https://science.nasa.gov/ems/02_anatomy/" target="_blank" rel="noopener">NASA：電磁波的結構</a></li><li><a href="https://www.iris.edu/hq/inclass/animation/seismic_wave_motions4_waves_animated" target="_blank" rel="noopener">IRIS / SAGE：四種地震波的運動</a></li><li><a href="https://www.ligo.caltech.edu/page/what-are-gw" target="_blank" rel="noopener">LIGO：什麼是重力波</a></li><li><a href="https://openstax.org/books/university-physics-volume-1/pages/16-2-mathematics-of-waves" target="_blank" rel="noopener">OpenStax：週期波與波函數</a></li><li><a href="https://science.nasa.gov/ems/" target="_blank" rel="noopener">NASA：電磁波頻譜</a></li><li><a href="https://physics.nist.gov/cuu/Constants/" target="_blank" rel="noopener">NIST：光速與普朗克常數</a></li></ul><p>兩個參考 GIF 由使用者提供，原圖署名為 Daniel A. Russell；其權利歸原作者。本網站自行繪製的模型與參考 GIF 分開呈現。</p></details></section>
 </main>
-<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波的介紹・波的分類 · v1.3</span></footer>
+<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波動互動教材 01–05 · v1.4</span></footer>
 <noscript><div class="noscript">請開啟 JavaScript，以使用互動動畫。</div></noscript>
 </body>
 </html>

@@ -47,9 +47,6 @@
     }
   };
   const planned = {
-    periodic:{title:'週期波的性質',outline:['波峰、波谷、振幅與波長','週期與頻率','位置—位移圖與時間—位移圖']},
-    speed:{title:'波速、頻率與週期',outline:['v = fλ = λ / T','固定介質中，改變頻率對波長的影響','跨介質時的波速、波長與頻率']},
-    spectrum:{title:'常見電磁波',outline:['無線電波、微波、紅外線與可見光','紫外線、X 射線與 γ 射線','頻率、波長與生活應用']},
     echo:{title:'回聲',outline:['聲音的反射','往返路徑與距離計算','回聲形成的時間差與實際應用']},
     music:{title:'樂音三要素：響度、音色、音調',outline:['響度與振幅／強度','音調與頻率','音色、波形與泛音']}
   };
@@ -129,8 +126,10 @@
   }
   function route(){
     const parts=location.hash.slice(1).split('/'),chapter=parts[0]||'intro';
-    WaveClassification.hide();$('classification-page').hidden=chapter!=='types';
+    WaveClassification.hide();WaveAdvanced.hide();$('classification-page').hidden=chapter!=='types';
+    for(const name of ['periodic','speed','spectrum'])$(name+'-page').hidden=chapter!==name;
     if(chapter==='types'){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter='types';$('intro-page').hidden=true;$('planned-page').hidden=true;WaveClassification.activate(parts[1]);}
+    else if(['periodic','speed','spectrum'].includes(chapter)){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter=chapter;$('intro-page').hidden=true;$('planned-page').hidden=true;WaveAdvanced.activate(chapter,parts[1]);}
     else if(planned[chapter]){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter=chapter;$('intro-page').hidden=true;$('planned-page').hidden=false;$('planned-title').textContent=planned[chapter].title;$('planned-outline').innerHTML=planned[chapter].outline.map(s=>`<li>${s}</li>`).join('');}
     else if(chapter==='experiment'){state.chapter='intro';$('intro-page').hidden=false;$('planned-page').hidden=true;if(!contentReady)selectMode(state.mode);}
     else{state.chapter='intro';$('intro-page').hidden=false;$('planned-page').hidden=true;selectMode(modes.includes(parts[1])?parts[1]:'water');}
@@ -191,6 +190,6 @@
       updateCameraReadout();draw();
     });
   }
-  function frame(timestamp){if(state.last===null)state.last=timestamp;const dt=Math.min(Math.max((timestamp-state.last)/1000,0),.05);state.last=timestamp;if(state.playing&&state.chapter==='intro'&&!document.hidden){state.t+=dt*state.speed;draw();}WaveClassification.tick(dt);window.requestAnimationFrame(frame);}
+  function frame(timestamp){if(state.last===null)state.last=timestamp;const dt=Math.min(Math.max((timestamp-state.last)/1000,0),.05);state.last=timestamp;if(state.playing&&state.chapter==='intro'&&!document.hidden){state.t+=dt*state.speed;draw();}WaveClassification.tick(dt);WaveAdvanced.tick(dt);window.requestAnimationFrame(frame);}
   route();window.requestAnimationFrame(frame);
 })();
