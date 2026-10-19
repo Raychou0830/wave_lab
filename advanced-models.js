@@ -6,8 +6,9 @@
   function velocity(x,t,o={}){return -(o.direction??1)*TAU*(o.frequency??.5)*(o.amplitude??1)*Math.cos(TAU*(x/(o.wavelength??4)-(o.direction??1)*(o.frequency??.5)*t)+(o.phase??0));}
   function periodicDefaults(mode){return mode==='anatomy'?{amplitude:1,wavelength:4,frequency:.5,labels:true,equilibrium:true}:{amplitude:1,wavelength:4,frequency:.5,x0:3,direction:1,traces:true};}
   const media={air:{name:'空氣（20°C）',speed:343,color:'#82d8d0'},water:{name:'水（20°C）',speed:1482,color:'#67b7e1'},steel:{name:'鋼（縱波代表值）',speed:5960,color:'#c7adff'},vacuum:{name:'真空中的光',speed:C,color:'#ff9ca6'}};
-  function speedDefaults(mode){return mode==='same'?{medium:'air',frequency:2,phase:0}:mode==='cross'?{mediumA:'air',mediumB:'water',frequency:2,phase:0}:{speed:12,frequency:2};}
+  function speedDefaults(mode){return mode==='same'?{medium:'air',frequency:.5,phase:0}:mode==='cross'?{mediumA:'air',mediumB:'water',frequency:2,phase:0}:{speed:12,frequency:2};}
   function relation(v,f){return {v,f,T:1/f,wavelength:v/f};}
+  function slowDistance(medium,t,scale=.001){return media[medium].speed*t*scale;}
   function cross(o){return {a:relation(media[o.mediumA].speed,o.frequency),b:relation(media[o.mediumB].speed,o.frequency)};}
   const bands=[
     {id:'radio',name:'無線電波',min:1e3,max:3e8,color:'#6ab8e6',uses:'廣播、通訊、天文觀測'},
@@ -22,5 +23,5 @@
   function spectrum(logF){const f=10**clamp(logF,3,22),lambda=C/f,joules=H*f;return {f,lambda,joules,eV:joules/Q,band:bandAt(f)};}
   const materials={drywall:{name:'乾牆／石膏板',loss:{wifi24:.34,wifi5:.62,visible:8}},wood:{name:'木門',loss:{wifi24:.43,wifi5:.78,visible:9}},glass:{name:'一般透明玻璃',loss:{wifi24:.18,wifi5:.28,visible:.12}},concrete:{name:'混凝土牆',loss:{wifi24:1.05,wifi5:1.8,visible:10}}};
   function transmission(material,signal,thickness){return Math.exp(-materials[material].loss[signal]*thickness);}
-  return {TAU,C,H,Q,clamp,wave,velocity,periodicDefaults,media,speedDefaults,relation,cross,bands,bandAt,spectrum,materials,transmission};
+  return {TAU,C,H,Q,clamp,wave,velocity,periodicDefaults,media,speedDefaults,relation,slowDistance,cross,bands,bandAt,spectrum,materials,transmission};
 });
