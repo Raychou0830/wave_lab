@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="從波的介紹與分類，逐步探索週期波、波速關係及電磁波頻譜的繁體中文互動教材。">
+  <meta name="description" content="從波的介紹與分類，逐步探索週期波、波速、電磁波、回聲與樂音三要素的繁體中文互動教材。">
   <meta name="theme-color" content="#102c39">
   <title>波動實驗室｜讓看不見的波，變得看得見</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <script>window.MathJax={chtml:{scale:1},startup:{typeset:false}};</script>
+  <script async id="mathjax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   <script defer src="models.js"></script>
   <script defer src="scene3d.js"></script>
   <script defer src="renderers.js"></script>
@@ -17,6 +19,9 @@
   <script defer src="advanced-models.js"></script>
   <script defer src="advanced-renderers.js"></script>
   <script defer src="advanced.js"></script>
+  <script defer src="echo-music-models.js"></script>
+  <script defer src="echo-music-renderers.js"></script>
+  <script defer src="echo-music.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
@@ -31,8 +36,8 @@
   <a href="#periodic/anatomy" data-chapter="periodic"><span>03</span> 週期波的性質</a>
   <a href="#speed/same" data-chapter="speed"><span>04</span> 波速與頻率、波長、週期</a>
   <a href="#spectrum/spectrum" data-chapter="spectrum"><span>05</span> 常見的電磁波</a>
-  <a href="#echo" data-chapter="echo"><span>06</span> 回聲 <small>規劃中</small></a>
-  <a href="#music" data-chapter="music"><span>07</span> 樂音三要素 <small>規劃中</small></a>
+  <a href="#echo/ship" data-chapter="echo"><span>06</span> 回聲</a>
+  <a href="#music/loudness" data-chapter="music"><span>07</span> 樂音三要素</a>
 </nav>
 <main id="main">
 <div id="intro-page">
@@ -136,17 +141,50 @@
   <section class="lab-layout" aria-label="常見的電磁波互動實驗"><aside class="experiment-menu"><div class="wave-menu"><button data-adv-chapter="spectrum" data-adv-mode="spectrum" aria-pressed="true"><span class="menu-no">01</span><span><strong>電磁波頻譜</strong><small>從無線電波到 γ 射線</small></span></button><button data-adv-chapter="spectrum" data-adv-mode="walls" aria-pressed="false"><span class="menu-no">02</span><span><strong>Wi‑Fi 為何能穿牆？</strong><small>材料與頻率的交互作用</small></span></button></div></aside><div class="experiment-body">
    <div class="experiment-heading"><h2 id="spectrum-title"></h2><span id="spectrum-tag" class="type-tag"></span></div><p id="spectrum-description" class="mode-description"></p>
    <div id="spectrum-panel" class="lab-panel"><div class="lab-topbar"><span><i id="spectrum-dot" class="status-dot"></i> <span id="spectrum-running">播放中</span></span><span class="model-label">互動模型・數值與圖形同步</span><button id="spectrum-fullscreen" class="icon-button" aria-label="全螢幕顯示動畫">⛶</button></div>
-    <div id="spectrum-controls" class="context-controls adv-controls"></div><div id="spectrum-stage" class="canvas-wrap adv-stage"><canvas id="spectrum-canvas" width="1000" height="620" role="img" aria-label="常見的電磁波互動動畫"></canvas></div><p id="spectrum-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
+    <div id="spectrum-controls" class="context-controls adv-controls"></div><div id="spectrum-stage" class="canvas-wrap adv-stage"><div id="spectrum-math" class="spectrum-math" aria-label="目前選取電磁波的頻率與波長" hidden></div><canvas id="spectrum-canvas" width="1000" height="620" role="img" aria-label="常見的電磁波互動動畫"></canvas></div><p id="spectrum-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
     <div id="spectrum-transport" class="transport"><div class="transport-buttons"><button id="spectrum-play" class="play-button">❚❚ 暫停</button><button id="spectrum-step">逐格 +</button><button id="spectrum-reset">↺ 重設</button></div><label class="speed-control" for="spectrum-speed">播放速度 <input id="spectrum-speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="spectrum-speed-out">1.0×</output></label><span class="time-readout">動畫時間 <output id="spectrum-time">0.00</output> s</span></div>
    </div>
    <div class="learning-grid"><article class="observation"><h3 id="spectrum-task-title"></h3><ol id="spectrum-tasks"></ol></article><article class="understanding"><h3 id="spectrum-principle-title"></h3><div id="spectrum-principle"></div></article></div>
    <details class="model-notes"><summary>給老師：模型條件與公式</summary><div id="spectrum-notes"></div></details>
-   <div class="experiment-next"><a href="#speed/same">← 04 波速與頻率、波長、週期</a><a href="#echo">06 回聲（規劃中） →</a></div>
+   <div class="experiment-next"><a href="#speed/same">← 04 波速與頻率、波長、週期</a><a href="#echo/ship">06 回聲 →</a></div>
   </div></section></div>
-<section id="planned-page" class="planned-page" hidden><p class="eyebrow">下一階段的學習</p><h1 id="planned-title"></h1><p>這個分頁已建立入口，互動教材尚未製作。目前可使用第 01～05 頁的互動教材。</p><ul id="planned-outline"></ul><a class="solid-link" href="#spectrum/spectrum">回到常見的電磁波 →</a></section>
+<div id="echo-page" class="advanced-page" hidden>
+  <section class="cls-intro"><h1>06 回聲</h1><p>把聲波的去程、反射與回程放進同一條時間線。</p></section>
+  <section class="lab-layout" aria-label="回聲互動實驗"><aside class="experiment-menu"><div class="wave-menu">
+    <button data-em-chapter="echo" data-em-mode="ship" aria-pressed="true"><span class="menu-no">01</span><span><strong>船向岸邊移動</strong><small>調整船速・解四個小題</small></span></button>
+    <button data-em-chapter="echo" data-em-mode="bat" aria-pressed="false"><span class="menu-no">02</span><span><strong>蝙蝠會撞牆嗎？</strong><small>速度・距離・反應時間</small></span></button>
+  </div></aside><div class="experiment-body">
+   <div class="experiment-heading"><h2 id="echo-title"></h2><span id="echo-tag" class="type-tag"></span></div><p id="echo-description" class="mode-description"></p>
+   <div id="echo-panel" class="lab-panel"><div class="lab-topbar"><span><i id="echo-dot" class="status-dot"></i> <span id="echo-running">播放中</span></span><span class="model-label">一維回聲模型・時間與數值同步</span><button id="echo-fullscreen" class="icon-button" aria-label="全螢幕顯示回聲動畫">⛶</button></div>
+    <div id="echo-controls" class="context-controls adv-controls em-controls"></div><div id="echo-stage" class="canvas-wrap adv-stage"><canvas id="echo-canvas" width="1000" height="620" role="img" tabindex="0"></canvas></div><p id="echo-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
+    <div class="transport"><div class="transport-buttons"><button id="echo-play" class="play-button">❚❚ 暫停</button><button id="echo-step">逐格 +</button><button id="echo-reset">↺ 重設</button></div><label class="speed-control" for="echo-speed">播放速度 <input id="echo-speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="echo-speed-out">1.0×</output></label><span class="time-readout">動畫時間 <output id="echo-time">0.00</output> s</span></div>
+   </div>
+   <div class="learning-grid"><article class="observation"><h3 id="echo-task-title"></h3><ol id="echo-tasks"></ol></article><article class="understanding"><h3 id="echo-principle-title"></h3><div id="echo-principle"></div></article></div>
+   <details class="model-notes"><summary>給老師：模型條件與公式</summary><div id="echo-notes"></div></details>
+   <div class="experiment-next"><a href="#spectrum/spectrum">← 05 常見的電磁波</a><a href="#music/loudness">07 樂音三要素 →</a></div>
+  </div></section>
+</div>
+<div id="music-page" class="advanced-page" hidden>
+  <section class="cls-intro"><h1>07 樂音三要素</h1><p>從球面擴散、頻率與頻譜，分清楚響度、音調與音色。</p></section>
+  <section class="lab-layout" aria-label="樂音三要素互動實驗"><aside class="experiment-menu"><div class="wave-menu">
+    <button data-em-chapter="music" data-em-mode="loudness" aria-pressed="true"><span class="menu-no">01</span><span><strong>響度與平方反比</strong><small>可旋轉的 3D 球面</small></span></button>
+    <button data-em-chapter="music" data-em-mode="pitch" aria-pressed="false"><span class="menu-no">02</span><span><strong>音調產生器</strong><small>輸入頻率・C D E F G</small></span></button>
+    <button data-em-chapter="music" data-em-mode="sweep" aria-pressed="false"><span class="menu-no">03</span><span><strong>不斷上升的聲音</strong><small>一般掃頻・謝帕德音</small></span></button>
+    <button data-em-chapter="music" data-em-mode="timbre" aria-pressed="false"><span class="menu-no">04</span><span><strong>音色與頻譜疊加</strong><small>音叉・三種樂器</small></span></button>
+  </div></aside><div class="experiment-body">
+   <div class="experiment-heading"><h2 id="music-title"></h2><span id="music-tag" class="type-tag"></span></div><p id="music-description" class="mode-description"></p>
+   <div id="music-panel" class="lab-panel"><div class="lab-topbar"><span><i id="music-dot" class="status-dot"></i> <span id="music-running">播放中</span></span><span class="model-label">教學合成音・預設低音量</span><button id="music-fullscreen" class="icon-button" aria-label="全螢幕顯示樂音動畫">⛶</button></div>
+    <div id="music-controls" class="context-controls adv-controls em-controls"></div><div id="music-stage" class="canvas-wrap adv-stage"><canvas id="music-canvas" width="1000" height="620" role="img" tabindex="0"></canvas></div><p id="music-pan-hint" class="canvas-pan-hint" hidden>畫面較窄時，可左右滑動動畫區查看完整圖形。</p>
+    <div class="transport"><div class="transport-buttons"><button id="music-play" class="play-button">❚❚ 暫停</button><button id="music-step">逐格 +</button><button id="music-reset">↺ 重設</button></div><label class="speed-control" for="music-speed">播放速度 <input id="music-speed" type="range" min="0.1" max="2" step="0.1" value="1"><output id="music-speed-out">1.0×</output></label><span class="time-readout">動畫時間 <output id="music-time">0.00</output> s</span></div>
+   </div>
+   <div class="learning-grid"><article class="observation"><h3 id="music-task-title"></h3><ol id="music-tasks"></ol></article><article class="understanding"><h3 id="music-principle-title"></h3><div id="music-principle"></div></article></div>
+   <details class="model-notes"><summary>給老師：模型條件、聽覺與安全</summary><div id="music-notes"></div></details>
+   <div class="experiment-next"><a href="#echo/ship">← 06 回聲</a><a href="#intro/water">回到 01 波的介紹 ↺</a></div>
+  </div></section>
+</div>
 <section class="sources"><details><summary>資料來源與動畫製作說明</summary><p>互動模型使用 HTML Canvas 自行繪製。定性概念參考以下教育與研究機構；各模型的近似條件列於實驗內。</p><ul><li><a href="https://www.noaa.gov/jetstream/ocean/waves/jetstream-max-anatomy-of-wave" target="_blank" rel="noopener">NOAA：水波與質點軌道</a></li><li><a href="https://www.nidcd.nih.gov/health/how-do-we-hear" target="_blank" rel="noopener">NIH / NIDCD：聲音如何轉換為聽覺</a></li><li><a href="https://science.nasa.gov/ems/02_anatomy/" target="_blank" rel="noopener">NASA：電磁波的結構</a></li><li><a href="https://www.iris.edu/hq/inclass/animation/seismic_wave_motions4_waves_animated" target="_blank" rel="noopener">IRIS / SAGE：四種地震波的運動</a></li><li><a href="https://www.ligo.caltech.edu/page/what-are-gw" target="_blank" rel="noopener">LIGO：什麼是重力波</a></li><li><a href="https://openstax.org/books/university-physics-volume-1/pages/16-2-mathematics-of-waves" target="_blank" rel="noopener">OpenStax：週期波與波函數</a></li><li><a href="https://science.nasa.gov/ems/" target="_blank" rel="noopener">NASA：電磁波頻譜</a></li><li><a href="https://physics.nist.gov/cuu/Constants/" target="_blank" rel="noopener">NIST：光速與普朗克常數</a></li></ul><p>兩個參考 GIF 由使用者提供，原圖署名為 Daniel A. Russell；其權利歸原作者。本網站自行繪製的模型與參考 GIF 分開呈現。</p></details></section>
 </main>
-<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波動互動教材 01–05 · v1.4.1</span></footer>
+<footer><a class="footer-brand" href="#intro/water">波動實驗室 <span>WAVE LAB</span></a><p>觀察 → 提問 → 理解</p><span>波動互動教材 01–07 · v2.0.0</span></footer>
 <noscript><div class="noscript">請開啟 JavaScript，以使用互動動畫。</div></noscript>
 </body>
 </html>

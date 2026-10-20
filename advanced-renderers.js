@@ -58,26 +58,41 @@ var AdvancedRenderers=(function(){
     text(c,'v',245,490,27,P.cyan,'center');text(c,'＝',310,490,27);text(c,'f',390,490,27,P.gold,'center');text(c,'×',455,490,27);text(c,'λ',550,490,27,P.purple,'center');
     text(c,`${r.v.toFixed(2)} m/s`,245,545,20,P.cyan,'center');text(c,`${r.f.toFixed(2)} Hz`,390,545,20,P.gold,'center');text(c,`${r.wavelength.toFixed(2)} m`,550,545,20,P.purple,'center');text(c,`T＝${r.T.toFixed(3)} s`,780,520,21,P.text,'center');
   }
-  function fmt(v,unit){const e=Math.floor(Math.log10(Math.abs(v)));return e>=4||e<=-3?`${(v/10**e).toFixed(2)} × 10^${String(e).replace('-','−')} ${unit}`:`${v.toPrecision(4)} ${unit}`;}
+  function powerLabel(c,e,x,y,color=P.muted,align='center'){const scale=Math.min(1,c.displayScale||1),baseSize=Math.max(18,16/scale),expSize=Math.max(16,16/scale),font=s=>`${s}px system-ui,"Noto Sans CJK TC",sans-serif`;c.font=font(baseSize);const bw=c.measureText('10').width;c.font=font(expSize);const exponent=String(e).replace('-','−'),ew=c.measureText(exponent).width,total=bw+ew,start=align==='center'?x-total/2:align==='right'?x-total:x;c.fillStyle=color;c.textAlign='left';c.textBaseline='middle';c.font=font(baseSize);c.fillText('10',start,y+3);c.font=font(expSize);c.fillText(exponent,start+bw,y-6);}
+  function visibleGradient(c,x,y,w,h){const g=c.createLinearGradient(x,0,x+w,0);[['#ef3030',0],['#ff9c35',.18],['#e6ea24',.32],['#24d65b',.48],['#00a9d6',.67],['#304cff',.82],['#8b0fff',1]].forEach(([color,stop])=>g.addColorStop(stop,color));c.fillStyle=g;c.fillRect(x,y,w,h);}
+  function wavelengthColor(nm){if(nm<450)return '#8b5cff';if(nm<495)return '#3f73ff';if(nm<570)return '#35d7a0';if(nm<590)return '#d9dc37';if(nm<620)return '#ffad43';return '#ff625d';}
   function spectrum(c,t,o){
-    clear(c);const logF=Number.isFinite(o.logF)?o.logF:14.7,s=M.spectrum(logF),xFor=f=>70+(Math.log10(f)-3)/19*860;
-    text(c,'低頻率・長波長',70,45,19,P.muted);text(c,'高頻率・短波長・高單一光子能量',930,45,19,P.muted,'right');arrow(c,70,80,930,80,P.cyan);
-    for(const b of M.bands){const a=xFor(b.min),z=xFor(Math.min(b.max,1e22));c.fillStyle=b.color;c.globalAlpha=.82;c.fillRect(a,145,Math.max(3,z-a),90);c.globalAlpha=1;const y=b.id==='visible'?258:b.id==='ultraviolet'?292:268;text(c,b.id==='visible'?'可見':b.name,(a+z)/2,y,16,b.color,'center');}
-    const cx=xFor(s.f);line(c,cx,105,cx,335,P.gold,4);dot(c,cx,145,8,P.gold);text(c,'目前選擇',cx,116,18,P.gold,'center');
-    for(let e=3;e<=22;e++){const px=xFor(10**e);line(c,px,235,px,244,P.text,1);if(e%2===1)text(c,`10^${e}`,px,323,16,P.muted,'center');}
-    text(c,'頻率（Hz，對數刻度）',500,358,18,P.muted,'center');
-    text(c,s.band.name,70,408,30,s.band.color);text(c,s.band.uses,70,450,19,P.text);
-    const displayF=.35+(logF-3)/19*.9;curve(c,x=>Math.sin(M.TAU*(x/1.25-displayF*t)),0,5,560,930,430,26,s.band.color,3);arrow(c,730,474,920,474,s.band.color);text(c,'示意振動與傳播',745,405,17,s.band.color,'center');
-    text(c,`頻率　${fmt(s.f,'Hz')}`,70,505,20);text(c,`波長　${fmt(s.lambda,'m')}`,510,525,20);text(c,`光子能量　${fmt(s.eV,'eV')}`,70,558,20);text(c,'動畫頻率已縮放；真空速率皆為 c',930,600,18,P.gold,'right');
+    clear(c);const logF=Number.isFinite(o.logF)?o.logF:14.7,s=M.spectrum(logF),xFor=f=>70+(Math.log10(f)-3)/19*860,xForL=l=>xFor(M.C/l),barY=122,barH=82;
+    text(c,'頻率 f（Hz）向右增加 →',70,38,19,P.muted);arrow(c,70,64,930,64,P.cyan);
+    for(let e=3;e<=21;e+=3){const px=xFor(10**e);line(c,px,100,px,barY,P.text,1);powerLabel(c,e,px,88);}
+    const grays=['#314854','#3b505a','#455861','#52636a','#455861','#3b505a','#314854'];
+    M.bands.forEach((b,i)=>{const a=xFor(b.min),z=xFor(Math.min(b.max,1e22));if(b.id==='visible')visibleGradient(c,a,barY,Math.max(4,z-a),barH);else{c.fillStyle=grays[i];c.fillRect(a,barY,Math.max(3,z-a),barH);}if(b.id!=='visible')text(c,b.name,(a+z)/2,barY+barH/2,16,P.text,'center');});
+    const vis=M.bands.find(b=>b.id==='visible'),vx1=xFor(vis.min),vx2=xFor(vis.max);
+    text(c,'可見光',vx1-8,barY+barH+35,16,P.text,'right');line(c,vx1,barY+barH,vx1,282,P.text,1,[5,5]);line(c,vx2,barY+barH,vx2,282,P.text,1,[5,5]);
+    for(let e=-13;e<=5;e+=3){const px=xForL(10**e);if(px<65||px>935)continue;line(c,px,barY+barH,px,barY+barH+18,P.text,1);powerLabel(c,e,px,barY+barH+42);}
+    text(c,'← 波長 λ（m）向左增加',930,276,18,P.muted,'right');
+    const cx=xFor(s.f);line(c,cx,104,cx,286,P.gold,3);dot(c,cx,barY,7,P.gold);text(c,'目前選擇',cx,108,16,P.gold,'center');
+    line(c,vx1,282,180,350,P.muted,1,[6,6]);line(c,vx2,282,820,350,P.muted,1,[6,6]);text(c,'把極窄的可見光區段展開',500,330,18,P.text,'center');visibleGradient(c,180,355,640,76);
+    const marks=[[750,'紅'],[620,'橙'],[590,'黃'],[570,'綠'],[495,'藍綠'],[450,'藍'],[380,'紫']];marks.forEach(([nm,label])=>{const x=180+(750-nm)/(750-380)*640;line(c,x,431,x,444,P.text,1);text(c,String(nm),x,462,16,P.muted,'center');if([750,590,570,450,380].includes(nm))text(c,label,x,492,16,P.text,'center');});text(c,'波長（nm）',820,330,16,P.muted,'right');
+    const selectedColor=s.band.id==='visible'?wavelengthColor(s.lambda*1e9):P.text; text(c,s.band.name,70,535,28,selectedColor);text(c,s.band.uses,70,574,18,P.text);
+    const displayF=.35+(logF-3)/19*.9;curve(c,x=>Math.sin(M.TAU*(x/1.25-displayF*t)),0,5,590,930,540,23,selectedColor,3);arrow(c,760,580,920,580,selectedColor);text(c,'示意波（頻率已縮放）',760,505,16,selectedColor,'center');text(c,'所有非可見光波段以灰階表示；真空中皆滿足 c＝fλ。',930,610,17,P.gold,'right');
   }
   function walls(c,t,o){
-    clear(c);const material=M.materials[o.material]?o.material:'drywall',thickness=Number.isFinite(o.thickness)?o.thickness:1,mat=M.materials[material],signals=[['wifi24','2.4 GHz Wi‑Fi','#69d9d0'],['wifi5','5 GHz Wi‑Fi','#f3c567'],['visible','可見光（約 550 nm）','#ff9ca6']];
-    text(c,`${mat.name}：厚度層級 ${thickness.toFixed(1)}×`,65,45,23);text(c,'光源／路由器',125,560,18,P.muted,'center');text(c,'接收器',870,560,18,P.muted,'center');
-    c.fillStyle='#7b8f99';c.fillRect(455,95,90,410);for(let i=0;i<6;i++)line(c,455,110+i*67,545,90+i*67,'#a9bbc3',2);
-    signals.forEach(([id,label,color],i)=>{const y=165+i*135,tr=M.transmission(material,id,thickness);rect(c,75,y-29,90,58,'#243f4c','#8ba8b4');text(c,i<2?'Wi‑Fi':'燈',120,y,19,color,'center');line(c,165,y,455,y,color,9);line(c,545,y,845,y,alpha(color,.12+.88*tr),2+7*tr);rect(c,845,y-35,70,70,'#243f4c','#8ba8b4');dot(c,880,y,10+12*tr,color);text(c,label,280,y-32,18,color,'center');text(c,`${Math.round(tr*100)}%（示意）`,700,y+32,18,color,'center');for(let j=0;j<3;j++){const p=(t*.28+j/3)%1,x=165+p*680;dot(c,x,y,7,x<455?color:alpha(color,.25+.75*tr));}});
-    text(c,'牆後強度採教學用相對衰減，不是建築材料的實測百分比。',65,600,18,P.muted);
+    clear(c);const material=M.materials[o.material]?o.material:'drywall',thickness=Number.isFinite(o.thickness)?o.thickness:1,mat=M.materials[material],signals=[['wifi24','2.4 GHz','λ 約 12.5 cm',P.cyan],['wifi5','5 GHz','λ 約 6.0 cm',P.gold]];
+    text(c,`${mat.name}・厚度層級 ${thickness.toFixed(1)}×`,55,35,22);text(c,'① 穿過牆體：比較材料造成的相對能量損耗',55,76,19,P.text);
+    c.fillStyle='#7b8f99';c.fillRect(452,98,96,220);for(let i=0;i<5;i++)line(c,452,110+i*48,548,92+i*48,'#a9bbc3',2);
+    signals.forEach(([id,label,wavelength,color],i)=>{const y=158+i*105,tr=M.transmission(material,id,thickness);rect(c,65,y-25,76,50,'#243f4c','#8ba8b4');text(c,'路由器',103,y,16,color,'center');line(c,141,y,452,y,color,8);line(c,548,y,870,y,alpha(color,.18+.82*tr),2+6*tr);rect(c,870,y-28,62,56,'#243f4c','#8ba8b4');dot(c,901,y,8+10*tr,color);text(c,`${label}　${wavelength}`,275,y-30,18,color,'center');text(c,`牆後相對強度 ${Math.round(tr*100)}%（示意）`,706,y+28,17,color,'center');for(let j=0;j<3;j++){const p=(t*.3+j/3)%1,x=141+p*760;dot(c,x,y,6,x<452?color:alpha(color,.2+.8*tr));}});
+    line(c,55,342,945,342,P.line,1);text(c,'② 繞過牆角：波長較長時，轉入幾何陰影區的繞射通常較明顯',55,374,19,P.text);
+    c.fillStyle='#7b8f99';c.fillRect(474,407,72,155);for(let i=0;i<4;i++)line(c,474,420+i*42,546,406+i*42,'#a9bbc3',2);text(c,'牆角',510,588,16,P.muted,'center');
+    rect(c,88,447,78,52,'#243f4c','#8ba8b4');text(c,'路由器',127,473,16,P.text,'center');rect(c,854,447,78,52,'#243f4c','#8ba8b4');text(c,'手機',893,473,16,P.text,'center');line(c,166,473,474,473,P.muted,1,[5,6]);line(c,546,473,854,473,P.muted,1,[5,6]);
+    const corner={x:510,y:397};line(c,166,473,corner.x,corner.y,P.cyan,3);line(c,corner.x,corner.y,893,473,alpha(P.cyan,.8),3);line(c,166,485,corner.x,corner.y+8,P.gold,2,[7,6]);line(c,corner.x,corner.y+8,893,485,alpha(P.gold,.48),2,[7,6]);
+    for(let j=0;j<4;j++){const r24=20+((t*52+j*58)%225);arc(c,corner.x,corner.y,r24,.08,.58,P.cyan,2,Math.max(0,.85-r24/360));const r5=15+((t*52+j*34)%145);arc(c,corner.x,corner.y+8,r5,.15,.42,P.gold,1.5,Math.max(0,.7-r5/260));}
+    const q=(t*.24)%1;pathDot(c,[[166,473],[corner.x,corner.y],[893,473]],q,7,P.cyan);pathDot(c,[[166,485],[corner.x,corner.y+8],[893,485]],q,6,alpha(P.gold,.7));text(c,'2.4 GHz：較廣的繞射示意',600,525,17,P.cyan);text(c,'5 GHz：較窄的繞射示意',600,554,17,P.gold);
+    text(c,'室內涵蓋＝材料損耗＋繞射＋反射／多路徑；不是「長波具有較強的微觀穿透力」。',55,600,17,P.muted);
   }
   function rect(c,x,y,w,h,fill,stroke){c.fillStyle=fill;c.fillRect(x,y,w,h);if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.strokeRect(x,y,w,h);}}
+  function arc(c,x,y,r,a0,a1,color,width=2,opacity=1){c.save();c.globalAlpha=opacity;c.beginPath();c.arc(x,y,r,a0*Math.PI,a1*Math.PI);c.strokeStyle=color;c.lineWidth=width;c.stroke();c.restore();}
+  function pathDot(c,points,p,r,color){const lengths=[],total=points.slice(1).reduce((sum,point,i)=>{const d=Math.hypot(point[0]-points[i][0],point[1]-points[i][1]);lengths.push(d);return sum+d;},0);let target=p*total;for(let i=0;i<lengths.length;i++){if(target<=lengths[i]){const q=target/lengths[i],a=points[i],b=points[i+1];dot(c,a[0]+(b[0]-a[0])*q,a[1]+(b[1]-a[1])*q,r,color);return;}target-=lengths[i];}}
   function alpha(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
   return {anatomy,graphs,same:sameMedium,cross:crossMedia,calculator,spectrum,walls};
 })();

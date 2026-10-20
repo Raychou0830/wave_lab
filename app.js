@@ -46,10 +46,6 @@
       notes:'<p>時空網格模式仿照常見的重力波概念圖：以三維網格高度示意引力凹陷，以外擴環形起伏表示傳播。這是視覺類比，並非完整廣義相對論模擬；重力波不是真實薄膜的上下運動，也不具有圖中這種固定高度。球體可選雙黑洞或雙中子星，網格未計算真實黑洞時空、三維四極輻射角分布或事件視界。</p><p>「距離伸縮」左圖採等質量、圓形、固定半徑的雙星軌道。一般雙星也會輻射重力波，但緻密雙星更適合此教學示意；未模擬軌道衰減、螺旋內落或合併。外擴圓弧只示意波前相位，不代表真實三維輻射的強度或角分布。</p><p>右圖是遠處、垂直於傳播方向的自由試驗質點環。使用小應變近似：+ 偏振取 x′ ≈ x(1+h/2)，y′ ≈ y(1−h/2)；× 偏振取 x′ ≈ x+hy/2，y′ ≈ y+hx/2。網格表示相對距離的變化，不是時空裡的實體薄膜。</p><p>採 h ∝ sin[2Ω(t−延遲)] 展示重力波頻率為 2 倍繞行頻率。切換兩種偏振是分別觀察兩個基底，不表示任何視角下的雙星只產生單一偏振。圖上應變極度放大，不能用來推算真實恆星質量、距離或 LIGO 訊號。</p>'
     }
   };
-  const planned = {
-    echo:{title:'回聲',outline:['聲音的反射','往返路徑與距離計算','回聲形成的時間差與實際應用']},
-    music:{title:'樂音三要素：響度、音色、音調',outline:['響度與振幅／強度','音調與頻率','音色、波形與泛音']}
-  };
   const defaults = mode => ({amplitude:1,trails:true,equilibrium:true,waterDepth:'deep',waterView:'section',frequency:.65,springType:'transverse',showE:true,showB:true,polarization:'plus',gravityView:'spacetime',binaryType:'blackhole',camera:Wave3D.viewDefault(mode),cameraPreset:'iso'});
   const state={mode:'water',chapter:'intro',t:0,speed:1,playing:!window.matchMedia('(prefers-reduced-motion: reduce)').matches,options:Object.fromEntries(modes.map(m=>[m,defaults(m)])),last:null};
   const canvas=$('main-canvas'),seismicCanvases=[...document.querySelectorAll('[data-seismic]')];
@@ -126,13 +122,13 @@
   }
   function route(){
     const parts=location.hash.slice(1).split('/'),chapter=parts[0]||'intro';
-    WaveClassification.hide();WaveAdvanced.hide();$('classification-page').hidden=chapter!=='types';
+    WaveClassification.hide();WaveAdvanced.hide();WaveEchoMusic.hide();$('classification-page').hidden=chapter!=='types';
     for(const name of ['periodic','speed','spectrum'])$(name+'-page').hidden=chapter!==name;
-    if(chapter==='types'){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter='types';$('intro-page').hidden=true;$('planned-page').hidden=true;WaveClassification.activate(parts[1]);}
-    else if(['periodic','speed','spectrum'].includes(chapter)){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter=chapter;$('intro-page').hidden=true;$('planned-page').hidden=true;WaveAdvanced.activate(chapter,parts[1]);}
-    else if(planned[chapter]){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter=chapter;$('intro-page').hidden=true;$('planned-page').hidden=false;$('planned-title').textContent=planned[chapter].title;$('planned-outline').innerHTML=planned[chapter].outline.map(s=>`<li>${s}</li>`).join('');}
-    else if(chapter==='experiment'){state.chapter='intro';$('intro-page').hidden=false;$('planned-page').hidden=true;if(!contentReady)selectMode(state.mode);}
-    else{state.chapter='intro';$('intro-page').hidden=false;$('planned-page').hidden=true;selectMode(modes.includes(parts[1])?parts[1]:'water');}
+    if(chapter==='types'){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter='types';$('intro-page').hidden=true;WaveClassification.activate(parts[1]);}
+    else if(['periodic','speed','spectrum'].includes(chapter)){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter=chapter;$('intro-page').hidden=true;WaveAdvanced.activate(chapter,parts[1]);}
+    else if(['echo','music'].includes(chapter)){cancelDrag();stopTone();unloadReferences();$('reference-details').open=false;state.chapter=chapter;$('intro-page').hidden=true;WaveEchoMusic.activate(chapter,parts[1]);}
+    else if(chapter==='experiment'){state.chapter='intro';$('intro-page').hidden=false;if(!contentReady)selectMode(state.mode);}
+    else{state.chapter='intro';$('intro-page').hidden=false;selectMode(modes.includes(parts[1])?parts[1]:'water');}
     document.querySelectorAll('[data-chapter]').forEach(a=>{if(a.dataset.chapter===state.chapter)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
     $('chapter-number').textContent=String(['intro','types','periodic','speed','spectrum','echo','music'].indexOf(state.chapter)+1).padStart(2,'0')+' / 07';
   }
@@ -190,6 +186,6 @@
       updateCameraReadout();draw();
     });
   }
-  function frame(timestamp){if(state.last===null)state.last=timestamp;const dt=Math.min(Math.max((timestamp-state.last)/1000,0),.05);state.last=timestamp;if(state.playing&&state.chapter==='intro'&&!document.hidden){state.t+=dt*state.speed;draw();}WaveClassification.tick(dt);WaveAdvanced.tick(dt);window.requestAnimationFrame(frame);}
+  function frame(timestamp){if(state.last===null)state.last=timestamp;const dt=Math.min(Math.max((timestamp-state.last)/1000,0),.05);state.last=timestamp;if(state.playing&&state.chapter==='intro'&&!document.hidden){state.t+=dt*state.speed;draw();}WaveClassification.tick(dt);WaveAdvanced.tick(dt);WaveEchoMusic.tick(dt);window.requestAnimationFrame(frame);}
   route();window.requestAnimationFrame(frame);
 })();
