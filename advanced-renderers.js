@@ -74,21 +74,23 @@ var AdvancedRenderers=(function(){
     const cx=xFor(s.f);line(c,cx,104,cx,286,P.gold,3);dot(c,cx,barY,7,P.gold);text(c,'目前選擇',cx,108,16,P.gold,'center');
     line(c,vx1,282,180,350,P.muted,1,[6,6]);line(c,vx2,282,820,350,P.muted,1,[6,6]);text(c,'把極窄的可見光區段展開',500,330,18,P.text,'center');visibleGradient(c,180,355,640,76);
     const marks=[[750,'紅'],[620,'橙'],[590,'黃'],[570,'綠'],[495,'藍綠'],[450,'藍'],[380,'紫']];marks.forEach(([nm,label])=>{const x=180+(750-nm)/(750-380)*640;line(c,x,431,x,444,P.text,1);text(c,String(nm),x,462,16,P.muted,'center');if([750,590,570,450,380].includes(nm))text(c,label,x,492,16,P.text,'center');});text(c,'波長（nm）',820,330,16,P.muted,'right');
-    const selectedColor=s.band.id==='visible'?wavelengthColor(s.lambda*1e9):P.text; text(c,s.band.name,70,535,28,selectedColor);text(c,s.band.uses,70,574,18,P.text);
-    const displayF=.35+(logF-3)/19*.9;curve(c,x=>Math.sin(M.TAU*(x/1.25-displayF*t)),0,5,590,930,540,23,selectedColor,3);arrow(c,760,580,920,580,selectedColor);text(c,'示意波（頻率已縮放）',760,505,16,selectedColor,'center');text(c,'所有非可見光波段以灰階表示；真空中皆滿足 c＝fλ。',930,610,17,P.gold,'right');
+    const selectedColor=s.band.id==='visible'?wavelengthColor(s.lambda*1e9):P.text;text(c,s.band.name,70,535,28,selectedColor);text(c,s.band.uses,70,574,18,P.text);text(c,'所有非可見光波段以灰階表示；真空中皆滿足 c＝fλ。',930,548,17,P.gold,'right');text(c,'拖曳上方頻率滑桿，觀察選取線與可見光展開區。',930,587,17,P.muted,'right');
   }
   function walls(c,t,o){
-    clear(c);const material=M.materials[o.material]?o.material:'drywall',thickness=Number.isFinite(o.thickness)?o.thickness:1,mat=M.materials[material],signals=[['wifi24','2.4 GHz','λ 約 12.5 cm',P.cyan],['wifi5','5 GHz','λ 約 6.0 cm',P.gold]];
+    clear(c);const material=M.materials[o.material]?o.material:'drywall',thickness=Number.isFinite(o.thickness)?o.thickness:1,mat=M.materials[material],signals=[['wifi24','2.4 GHz','λ 約 12.5 cm',P.cyan],['wifi5','5 GHz','λ 約 6.0 cm',P.gold]],wallW=52+thickness*50,wallL=500-wallW/2,wallR=500+wallW/2;
     text(c,`${mat.name}・厚度層級 ${thickness.toFixed(1)}×`,55,35,22);text(c,'① 穿過牆體：比較材料造成的相對能量損耗',55,76,19,P.text);
-    c.fillStyle='#7b8f99';c.fillRect(452,98,96,220);for(let i=0;i<5;i++)line(c,452,110+i*48,548,92+i*48,'#a9bbc3',2);
-    signals.forEach(([id,label,wavelength,color],i)=>{const y=158+i*105,tr=M.transmission(material,id,thickness);rect(c,65,y-25,76,50,'#243f4c','#8ba8b4');text(c,'路由器',103,y,16,color,'center');line(c,141,y,452,y,color,8);line(c,548,y,870,y,alpha(color,.18+.82*tr),2+6*tr);rect(c,870,y-28,62,56,'#243f4c','#8ba8b4');dot(c,901,y,8+10*tr,color);text(c,`${label}　${wavelength}`,275,y-30,18,color,'center');text(c,`牆後相對強度 ${Math.round(tr*100)}%（示意）`,706,y+28,17,color,'center');for(let j=0;j<3;j++){const p=(t*.3+j/3)%1,x=141+p*760;dot(c,x,y,6,x<452?color:alpha(color,.2+.8*tr));}});
-    line(c,55,342,945,342,P.line,1);text(c,'② 繞過牆角：波長較長時，轉入幾何陰影區的繞射通常較明顯',55,374,19,P.text);
-    c.fillStyle='#7b8f99';c.fillRect(474,407,72,155);for(let i=0;i<4;i++)line(c,474,420+i*42,546,406+i*42,'#a9bbc3',2);text(c,'牆角',510,588,16,P.muted,'center');
-    rect(c,88,447,78,52,'#243f4c','#8ba8b4');text(c,'路由器',127,473,16,P.text,'center');rect(c,854,447,78,52,'#243f4c','#8ba8b4');text(c,'手機',893,473,16,P.text,'center');line(c,166,473,474,473,P.muted,1,[5,6]);line(c,546,473,854,473,P.muted,1,[5,6]);
-    const corner={x:510,y:397};line(c,166,473,corner.x,corner.y,P.cyan,3);line(c,corner.x,corner.y,893,473,alpha(P.cyan,.8),3);line(c,166,485,corner.x,corner.y+8,P.gold,2,[7,6]);line(c,corner.x,corner.y+8,893,485,alpha(P.gold,.48),2,[7,6]);
-    for(let j=0;j<4;j++){const r24=20+((t*52+j*58)%225);arc(c,corner.x,corner.y,r24,.08,.58,P.cyan,2,Math.max(0,.85-r24/360));const r5=15+((t*52+j*34)%145);arc(c,corner.x,corner.y+8,r5,.15,.42,P.gold,1.5,Math.max(0,.7-r5/260));}
-    const q=(t*.24)%1;pathDot(c,[[166,473],[corner.x,corner.y],[893,473]],q,7,P.cyan);pathDot(c,[[166,485],[corner.x,corner.y+8],[893,485]],q,6,alpha(P.gold,.7));text(c,'2.4 GHz：較廣的繞射示意',600,525,17,P.cyan);text(c,'5 GHz：較窄的繞射示意',600,554,17,P.gold);
-    text(c,'室內涵蓋＝材料損耗＋繞射＋反射／多路徑；不是「長波具有較強的微觀穿透力」。',55,600,17,P.muted);
+    c.fillStyle='#7b8f99';c.fillRect(wallL,98,wallW,220);for(let i=0;i<6;i++)line(c,wallL,112+i*42,wallR,96+i*42,'#a9bbc3',2);text(c,`圖示牆厚 ${wallW.toFixed(0)} px`,500,302,16,P.text,'center');
+    signals.forEach(([id,label,wavelength,color],i)=>{const y=158+i*105,tr=M.transmission(material,id,thickness);rect(c,65,y-25,76,50,'#243f4c','#8ba8b4');text(c,'路由器',103,y,16,color,'center');line(c,141,y,wallL,y,color,8);line(c,wallR,y,870,y,alpha(color,.18+.82*tr),2+6*tr);rect(c,870,y-28,62,56,'#243f4c','#8ba8b4');dot(c,901,y,8+10*tr,color);text(c,`${label}　${wavelength}`,265,y-30,18,color,'center');text(c,`牆後相對強度 ${Math.round(tr*100)}%（示意）`,715,y+28,17,color,'center');for(let j=0;j<3;j++){const p=(t*.3+j/3)%1,x=141+p*760;if(x<wallL||x>wallR)dot(c,x,y,6,x<wallL?color:alpha(color,.2+.8*tr));}});
+    line(c,55,332,945,332,P.line,1);text(c,'② 繞過牆角：2.4 GHz 轉入幾何陰影區的範圍較廣',55,360,19,P.text);
+    const corner={x:505,y:410},router=[145,495],phone=[885,495];
+    c.fillStyle='rgba(5,20,28,.22)';c.beginPath();c.moveTo(540,410);c.lineTo(945,535);c.lineTo(945,604);c.lineTo(540,565);c.closePath();c.fill();text(c,'幾何陰影區',788,582,16,P.muted,'center');
+    c.save();c.fillStyle=alpha(P.cyan,.10);c.beginPath();c.moveTo(corner.x,corner.y);c.arc(corner.x,corner.y,430,-.08*Math.PI,.30*Math.PI);c.closePath();c.fill();c.fillStyle=alpha(P.gold,.10);c.beginPath();c.moveTo(corner.x,corner.y+8);c.arc(corner.x,corner.y+8,430,.02*Math.PI,.16*Math.PI);c.closePath();c.fill();c.restore();
+    c.fillStyle='#7b8f99';c.fillRect(470,410,70,160);for(let i=0;i<5;i++)line(c,470,422+i*34,540,410+i*34,'#a9bbc3',2);text(c,'牆角',505,594,16,P.muted,'center');
+    rect(c,82,469,92,52,'#243f4c','#8ba8b4');text(c,'路由器',128,495,16,P.text,'center');rect(c,844,469,82,52,'#243f4c','#8ba8b4');text(c,'手機',885,495,16,P.text,'center');line(c,174,495,470,495,P.muted,1,[5,6]);line(c,540,495,844,495,P.muted,1,[5,6]);
+    line(c,174,495,corner.x,corner.y,P.cyan,3);line(c,174,505,corner.x,corner.y+8,P.gold,2,[7,6]);line(c,corner.x,corner.y,phone[0],phone[1],alpha(P.cyan,.9),3);line(c,corner.x,corner.y+8,phone[0],phone[1]+18,alpha(P.gold,.58),2,[7,6]);
+    for(let j=0;j<5;j++){const r24=28+((t*42+j*78)%390);arc(c,corner.x,corner.y,r24,-.08,.30,P.cyan,2,Math.max(0,.9-r24/520));const r5=22+((t*42+j*58)%290);arc(c,corner.x,corner.y+8,r5,.02,.16,P.gold,1.7,Math.max(0,.78-r5/420));}
+    const q=(t*.20)%1;pathDot(c,[[174,495],[corner.x,corner.y],phone],q,7,P.cyan);pathDot(c,[[174,505],[corner.x,corner.y+8],[phone[0],phone[1]+18]],q,6,alpha(P.gold,.78));text(c,'2.4 GHz：較廣的繞射扇形',575,397,17,P.cyan);text(c,'5 GHz：較窄的繞射扇形',945,429,17,P.gold,'right');
+    text(c,'材料損耗、繞射與反射／多路徑共同決定室內涵蓋。',945,610,16,P.muted,'right');
   }
   function rect(c,x,y,w,h,fill,stroke){c.fillStyle=fill;c.fillRect(x,y,w,h);if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.strokeRect(x,y,w,h);}}
   function arc(c,x,y,r,a0,a1,color,width=2,opacity=1){c.save();c.globalAlpha=opacity;c.beginPath();c.arc(x,y,r,a0*Math.PI,a1*Math.PI);c.strokeStyle=color;c.lineWidth=width;c.stroke();c.restore();}
